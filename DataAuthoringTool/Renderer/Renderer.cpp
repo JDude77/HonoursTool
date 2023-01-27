@@ -9,8 +9,8 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_D3D11_IMPLEMENTATION
-#include "Nuklear/nuklear.h"
-#include "Nuklear/nuklear_d3d11.h"
+#include "../Nuklear/nuklear.h"
+#include "../Nuklear/nuklear_d3d11.h"
 
 constexpr auto MAX_VERTEX_BUFFER = 512 * 1024;
 constexpr auto MAX_INDEX_BUFFER = 128 * 1024;

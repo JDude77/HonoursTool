@@ -25,11 +25,11 @@
     </ClInclude>
     <ClInclude Include="Nuklear\nuklear_d3d11_pixel_shader.h" />
     <ClInclude Include="Nuklear\nuklear_d3d11_vertex_shader.h" />
-    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Renderer\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Renderer\Renderer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
