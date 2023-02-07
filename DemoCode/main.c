@@ -282,7 +282,7 @@ int main(void)
 							{
 								fprintf(stdout, "WARNING: X-Coordinate field should be non-empty.\n");
 							}
-							else if(atoi(text[2]) < 0)
+							if(atoi(text[2]) < 0)
 							{
 								fprintf(stdout, "WARNING: X-Coordinate field should be non-negative.");
 							}
