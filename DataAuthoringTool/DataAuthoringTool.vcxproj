@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataInterfaces.h" />
+    <ClInclude Include="DataManager.h" />
     <ClInclude Include="Nuklear\nuklear.h" />
     <ClInclude Include="Nuklear\nuklear_d3d11.h">
       <FileType>CppHeader</FileType>
@@ -26,6 +28,7 @@
     <ClInclude Include="Nuklear\nuklear_d3d11_pixel_shader.h" />
     <ClInclude Include="Nuklear\nuklear_d3d11_vertex_shader.h" />
     <ClInclude Include="Renderer\Renderer.h" />
+    <ClInclude Include="Template.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

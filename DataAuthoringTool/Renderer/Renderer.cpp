@@ -80,7 +80,6 @@ void Renderer::InitNuklear(const int windowWidth, const int windowHeight, const 
 		nk_style_set_font(nuklearContext_, &font->handle);
 	}//End if
 	
-
 	backgroundColour_ = new nk_colorf;
 	backgroundColour_->r = 0.1f;
 	backgroundColour_->g = 0.18f;
@@ -105,11 +104,11 @@ void Renderer::InitD3D11(int windowWidth, int windowHeight)
 
 	if(FAILED(D3D11CreateDeviceAndSwapChain(
 		NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION,
-		&swapChainDesc_, &swapChain, &device, &featureLevel, &context)))
+		&swapChainDesc_, &swapChain, &device, &featureLevel_, &context)))
 	{
 		const HRESULT hresult = D3D11CreateDeviceAndSwapChain(
 			nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION,
-			&swapChainDesc_, &swapChain, &device, &featureLevel, &context);
+			&swapChainDesc_, &swapChain, &device, &featureLevel_, &context);
 		assert(SUCCEEDED(hresult));
 	}//End if
 	SetSwapChainSize(windowWidth, windowHeight);

@@ -24,7 +24,7 @@ private:
 	DWORD extendedStyle_ = WS_EX_APPWINDOW;
 	HWND hwnd_;
 	DXGI_SWAP_CHAIN_DESC swapChainDesc_{};
-	D3D_FEATURE_LEVEL featureLevel;
+	D3D_FEATURE_LEVEL featureLevel_;
 
 public:
 
