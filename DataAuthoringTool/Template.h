@@ -35,13 +35,13 @@ private:
 	vector<ValidationRule> validationRules_;
 };
 
-class Template : public ISave, public ILoad, public IDelete, public IExport
+class Template : public ISave, public ILoad, public IExport, public IDelete
 {
 public:
 	int Save() override;
 	int Load() override;
-	int Delete() override;
 	int Export() override;
+	int Delete() override;
 
 private:
 	string name_;

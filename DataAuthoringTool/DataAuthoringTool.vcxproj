@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="DataInterfaces.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="Member.h" />
     <ClInclude Include="Nuklear\nuklear.h" />
     <ClInclude Include="Nuklear\nuklear_d3d11.h">
       <FileType>CppHeader</FileType>

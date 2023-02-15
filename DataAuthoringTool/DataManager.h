@@ -14,9 +14,11 @@ class Group;
 
 class DataManager
 {
-	//String: Object's ID
+	//String: Template's ID
 	map<string, Template> templates_;
+	//String: Member's ID
 	map<string, Member> members_;
+	//String: Group's ID
 	map<string, Group> groups_;
 
 	template <class Instance>
