@@ -21,7 +21,10 @@
   <ItemGroup>
     <ClInclude Include="DataInterfaces.h" />
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="DataTypes.h" />
+    <ClInclude Include="Group.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="MemberField.h" />
     <ClInclude Include="Nuklear\nuklear.h" />
     <ClInclude Include="Nuklear\nuklear_d3d11.h">
       <FileType>CppHeader</FileType>
@@ -30,6 +33,8 @@
     <ClInclude Include="Nuklear\nuklear_d3d11_vertex_shader.h" />
     <ClInclude Include="Renderer\Renderer.h" />
     <ClInclude Include="Template.h" />
+    <ClInclude Include="TemplateField.h" />
+    <ClInclude Include="ValidationRule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

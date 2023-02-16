@@ -16,6 +16,24 @@
     <Filter Include="Header Files\Nuklear">
       <UniqueIdentifier>{8a1a2318-692e-4790-8ee7-72824a976eee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Data">
+      <UniqueIdentifier>{9de0f536-9d93-4a50-9845-4eb11d7edb71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Members">
+      <UniqueIdentifier>{4e20f80f-6adb-4996-988d-3135270d0155}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Groups">
+      <UniqueIdentifier>{144bf4cf-21cf-428e-a478-1beada042ff9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Templates">
+      <UniqueIdentifier>{15b2d9c4-93b3-4a9a-8246-c05453ab6a58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Validation Rules">
+      <UniqueIdentifier>{ec44a7fe-e1ef-402a-a99f-6b405a9269f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Data\Shared">
+      <UniqueIdentifier>{48e93d40-f9df-4109-a3f7-1ae4ab48f153}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Nuklear\nuklear.h">
@@ -34,16 +52,31 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Template.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataInterfaces.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Data</Filter>
     </ClInclude>
     <ClInclude Include="Member.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Data\Members</Filter>
+    </ClInclude>
+    <ClInclude Include="MemberField.h">
+      <Filter>Header Files\Data\Members</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>Header Files\Data\Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="TemplateField.h">
+      <Filter>Header Files\Data\Templates</Filter>
+    </ClInclude>
+    <ClInclude Include="Template.h">
+      <Filter>Header Files\Data\Templates</Filter>
+    </ClInclude>
+    <ClInclude Include="ValidationRule.h">
+      <Filter>Header Files\Data\Validation Rules</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTypes.h">
+      <Filter>Header Files\Data\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="DataInterfaces.h">
+      <Filter>Header Files\Data\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

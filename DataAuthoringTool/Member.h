@@ -8,20 +8,12 @@
 using std::string;
 #include <vector>
 using std::vector;
+#include <memory>
+using std::shared_ptr;
 
 //Forward Declarations
 class Template;
-class Field;
-
-class FieldData : public IDelete, public IValidate
-{
-public:
-	int Validate() override;
-	int Delete() override;
-
-private:
-	Field* field_;
-};
+class MemberField;
 
 class Member : public ISave, public ILoad, public IExport, public IDelete, public IValidate
 {
@@ -35,6 +27,7 @@ public:
 private:
 	string id_;
 	string name_;
-	Template* type_ = nullptr;
+	shared_ptr<Template> type_ = nullptr;
+	vector<MemberField> fields_;
 };
 #endif
