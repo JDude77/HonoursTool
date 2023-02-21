@@ -8,8 +8,10 @@
 #include <d3d11.h>
 #include <string>
 
+//Forward Declarations
 struct nk_colorf;
 struct nk_context;
+class NuklearWindowManager;
 
 class Renderer
 {
@@ -26,6 +28,7 @@ private:
 	DXGI_SWAP_CHAIN_DESC swapChainDesc_{};
 	D3D_FEATURE_LEVEL featureLevel_;
 
+	NuklearWindowManager* nuklearWindowManager_;
 public:
 
 #pragma endregion

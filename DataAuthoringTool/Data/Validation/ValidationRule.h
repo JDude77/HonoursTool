@@ -2,7 +2,7 @@
 #ifndef VALIDATION_RULE
 #define VALIDATION_RULE
 
-#include "DataTypes.h"
+#include "../Shared/DataTypes.h"
 
 #include <vector>
 using std::vector;
@@ -11,7 +11,7 @@ using std::map;
 #include <functional>
 using std::function;
 
-struct ValidationRule
+class ValidationRule
 {
 private:
 	//Need a map to serve as a dictionary like so:

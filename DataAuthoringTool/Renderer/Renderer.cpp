@@ -9,8 +9,10 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_D3D11_IMPLEMENTATION
-#include "../Nuklear/nuklear.h"
-#include "../Nuklear/nuklear_d3d11.h"
+#include "../Nuklear/Core/nuklear.h"
+#include "../Nuklear/Core/nuklear_d3d11.h"
+
+#include "../Nuklear/Tool Windows/NuklearWindowManager.h"
 
 constexpr auto MAX_VERTEX_BUFFER = 512 * 1024;
 constexpr auto MAX_INDEX_BUFFER = 128 * 1024;
@@ -27,6 +29,8 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	InitD3D11(windowWidth, windowHeight);
 	
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
+
+	nuklearWindowManager_ = new NuklearWindowManager();
 }//End Renderer Constructor
 
 Renderer::~Renderer()
@@ -47,14 +51,7 @@ int Renderer::Update()
 	/////////////////////////////////
 	//Process things to render here//
 	/////////////////////////////////
-	if(nk_begin(nuklearContext_, "TEST", nk_rect(25, 50, 100, 100),
-		    NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-		    NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
-	{
-		
-	}//End if
-
-	nk_end(nuklearContext_);
+	nuklearWindowManager_->RenderAllActiveWindows(nuklearContext_);
 	
 	DrawGUI();
 
@@ -161,7 +158,7 @@ void Renderer::DrawGUI()
 	context->ClearRenderTargetView(renderTargetView, &backgroundColour_->r);
 	context->OMSetRenderTargets(1, &renderTargetView, nullptr);
 	nk_d3d11_render(context, NK_ANTI_ALIASING_ON);
-	HRESULT hresult = swapChain->Present(1, 0);
+	const HRESULT hresult = swapChain->Present(1, 0);
 	if(hresult == DXGI_ERROR_DEVICE_RESET || hresult == DXGI_ERROR_DEVICE_REMOVED)
 	{
 		MessageBoxW(nullptr, L"D3D11 device is lost or removed!", L"Error", 0);
@@ -194,10 +191,10 @@ void Renderer::SetSwapChainSize(const int width, const int height)
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-	hresult = swapChain->GetBuffer(0, IID_ID3D11Texture2D, (void**)(&backBuffer));
+	hresult = swapChain->GetBuffer(0, IID_ID3D11Texture2D, reinterpret_cast<void**>(&backBuffer));
 	assert(SUCCEEDED(hresult));
 
-	hresult = device->CreateRenderTargetView((ID3D11Resource*)backBuffer, &desc, &renderTargetView);
+	hresult = device->CreateRenderTargetView(backBuffer, &desc, &renderTargetView);
 	assert(SUCCEEDED(hresult));
 
 	backBuffer->Release();

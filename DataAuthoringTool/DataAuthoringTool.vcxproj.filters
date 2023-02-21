@@ -34,49 +34,67 @@
     <Filter Include="Header Files\Data\Shared">
       <UniqueIdentifier>{48e93d40-f9df-4109-a3f7-1ae4ab48f153}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Nuklear\Core">
+      <UniqueIdentifier>{954739de-b4e0-4d8b-9062-7e69f1e8c62c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Nuklear\Tool Windows">
+      <UniqueIdentifier>{c393e7dd-0876-40cf-bb38-d96683ca794c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Nuklear">
+      <UniqueIdentifier>{b8308dfa-57af-4197-aded-fece11878750}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Nuklear\Tool Windows">
+      <UniqueIdentifier>{9214a62f-1731-4da4-812c-b13a4e553b24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Nuklear\nuklear.h">
-      <Filter>Header Files\Nuklear</Filter>
-    </ClInclude>
-    <ClInclude Include="Nuklear\nuklear_d3d11.h">
-      <Filter>Header Files\Nuklear</Filter>
-    </ClInclude>
-    <ClInclude Include="Nuklear\nuklear_d3d11_pixel_shader.h">
-      <Filter>Header Files\Nuklear</Filter>
-    </ClInclude>
-    <ClInclude Include="Nuklear\nuklear_d3d11_vertex_shader.h">
-      <Filter>Header Files\Nuklear</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataManager.h">
+    <ClInclude Include="Data\DataManager.h">
       <Filter>Header Files\Data</Filter>
     </ClInclude>
-    <ClInclude Include="Member.h">
+    <ClInclude Include="Data\Members\Member.h">
       <Filter>Header Files\Data\Members</Filter>
     </ClInclude>
-    <ClInclude Include="MemberField.h">
+    <ClInclude Include="Data\Members\MemberField.h">
       <Filter>Header Files\Data\Members</Filter>
     </ClInclude>
-    <ClInclude Include="Group.h">
+    <ClInclude Include="Data\Groups\Group.h">
       <Filter>Header Files\Data\Groups</Filter>
     </ClInclude>
-    <ClInclude Include="TemplateField.h">
+    <ClInclude Include="Data\Templates\TemplateField.h">
       <Filter>Header Files\Data\Templates</Filter>
     </ClInclude>
-    <ClInclude Include="Template.h">
+    <ClInclude Include="Data\Templates\Template.h">
       <Filter>Header Files\Data\Templates</Filter>
     </ClInclude>
-    <ClInclude Include="ValidationRule.h">
+    <ClInclude Include="Data\Validation\ValidationRule.h">
       <Filter>Header Files\Data\Validation Rules</Filter>
     </ClInclude>
-    <ClInclude Include="DataTypes.h">
+    <ClInclude Include="Data\Shared\DataTypes.h">
       <Filter>Header Files\Data\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="DataInterfaces.h">
+    <ClInclude Include="Data\Shared\DataInterfaces.h">
       <Filter>Header Files\Data\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Core\nuklear.h">
+      <Filter>Header Files\Nuklear\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11.h">
+      <Filter>Header Files\Nuklear\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11_pixel_shader.h">
+      <Filter>Header Files\Nuklear\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11_vertex_shader.h">
+      <Filter>Header Files\Nuklear\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Tool Windows\NuklearWindowManager.h">
+      <Filter>Header Files\Nuklear\Tool Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Nuklear\Tool Windows\NuklearWindow.h">
+      <Filter>Header Files\Nuklear\Tool Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +103,9 @@
     </ClCompile>
     <ClCompile Include="Renderer\Renderer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Nuklear\Tool Windows\NuklearWindowManager.cpp">
+      <Filter>Source Files\Nuklear\Tool Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

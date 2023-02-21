@@ -2,8 +2,8 @@
 #ifndef TEMPLATE_FIELD
 #define TEMPLATE_FIELD
 
-#include "DataInterfaces.h"
-#include "DataTypes.h"
+#include "../Shared/DataInterfaces.h"
+#include "../Shared/DataTypes.h"
 
 #include <string>
 using std::string;

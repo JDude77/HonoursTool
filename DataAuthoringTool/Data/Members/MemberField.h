@@ -2,7 +2,7 @@
 #ifndef MEMBER_FIELD
 #define MEMBER_FIELD
 
-#include "DataInterfaces.h"
+#include "../Shared/DataInterfaces.h"
 
 #include <memory>
 using std::shared_ptr;

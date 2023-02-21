@@ -19,25 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataInterfaces.h" />
-    <ClInclude Include="DataManager.h" />
-    <ClInclude Include="DataTypes.h" />
-    <ClInclude Include="Group.h" />
-    <ClInclude Include="Member.h" />
-    <ClInclude Include="MemberField.h" />
-    <ClInclude Include="Nuklear\nuklear.h" />
-    <ClInclude Include="Nuklear\nuklear_d3d11.h">
+    <ClInclude Include="Data\Shared\DataInterfaces.h" />
+    <ClInclude Include="Data\DataManager.h" />
+    <ClInclude Include="Data\Shared\DataTypes.h" />
+    <ClInclude Include="Data\Groups\Group.h" />
+    <ClInclude Include="Data\Members\Member.h" />
+    <ClInclude Include="Data\Members\MemberField.h" />
+    <ClInclude Include="Nuklear\Tool Windows\NuklearWindow.h" />
+    <ClInclude Include="Nuklear\Tool Windows\NuklearWindowManager.h" />
+    <ClInclude Include="Nuklear\Core\nuklear.h" />
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11.h">
       <FileType>CppHeader</FileType>
     </ClInclude>
-    <ClInclude Include="Nuklear\nuklear_d3d11_pixel_shader.h" />
-    <ClInclude Include="Nuklear\nuklear_d3d11_vertex_shader.h" />
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11_pixel_shader.h" />
+    <ClInclude Include="Nuklear\Core\nuklear_d3d11_vertex_shader.h" />
     <ClInclude Include="Renderer\Renderer.h" />
-    <ClInclude Include="Template.h" />
-    <ClInclude Include="TemplateField.h" />
-    <ClInclude Include="ValidationRule.h" />
+    <ClInclude Include="Data\Templates\Template.h" />
+    <ClInclude Include="Data\Templates\TemplateField.h" />
+    <ClInclude Include="Data\Validation\ValidationRule.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Nuklear\Tool Windows\NuklearWindowManager.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

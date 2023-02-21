@@ -2,7 +2,7 @@
 #ifndef GROUP
 #define GROUP
 
-#include "DataInterfaces.h"
+#include "../Shared/DataInterfaces.h"
 
 #include <string>
 using std::string;

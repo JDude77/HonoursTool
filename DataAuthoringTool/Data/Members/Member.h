@@ -2,7 +2,7 @@
 #ifndef MEMBER
 #define MEMBER
 
-#include "DataInterfaces.h"
+#include "../Shared/DataInterfaces.h"
 
 #include <string>
 using std::string;

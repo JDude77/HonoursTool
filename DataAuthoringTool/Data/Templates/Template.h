@@ -2,7 +2,7 @@
 #ifndef TEMPLATE
 #define TEMPLATE
 
-#include "DataInterfaces.h"
+#include "../Shared/DataInterfaces.h"
 
 #include <string>
 using std::string;
