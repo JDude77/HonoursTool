@@ -3,6 +3,7 @@
 #define TEMPLATE
 
 #include "../Shared/DataInterfaces.h"
+#include "TemplateField.h"
 
 #include <string>
 using std::string;
@@ -10,16 +11,15 @@ using std::string;
 using std::vector;
 
 //Forward Declarations
-class ValidationRule;
-class TemplateField;
+//class ValidationRule;
 
 class Template : public PrimaryData
 {
 public:
-	int Save() override;
-	int Load() override;
-	int Export() override;
-	int Delete() override;
+	int Save() override{return 1;};
+	int Load() override{return 1;};
+	int Export() override{return 1;};
+	int Delete() override{return 1;};
 
 private:
 	vector<TemplateField> fields_;

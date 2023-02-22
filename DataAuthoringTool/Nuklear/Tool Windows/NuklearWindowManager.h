@@ -1,25 +1,16 @@
 #pragma once
+//Header-only class to take advantage of nuklear.h being declared earlier in the program execution, meaning this class has access to its functions
 #ifndef NUKLEAR_WINDOW_MANAGER
 #define NUKLEAR_WINDOW_MANAGER
 #include "NuklearWindow.h"
 #include <vector>
 
 #include "../../Data/Shared/DataInterfaces.h"
+#include "../../Data/Templates/Template.h"
 using std::vector;
 
 class NuklearWindowManager
 {
-public:
-	NuklearWindowManager(){};
-	bool RenderAllActiveWindows(nk_context* nuklearContext)
-	{
-		for (NuklearWindow* window : activeNuklearWindows_)
-		{
-			if(const bool success = RenderWindow(nuklearContext, window); !success) return false;
-		}//End for
-	}//End RenderAllActiveWindows
-	bool CreateNewWindow(char* windowTitle, struct nk_rect windowStartSize){return true;}
-
 private:
 	vector<NuklearWindow*> activeNuklearWindows_;
 	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
@@ -62,5 +53,26 @@ private:
 		
 		return true;
 	}//End RenderWindow
+
+public:
+	NuklearWindowManager(){};
+	bool RenderAllActiveWindows(nk_context* nuklearContext)
+	{
+		for (NuklearWindow* window : activeNuklearWindows_)
+		{
+			if(const bool success = RenderWindow(nuklearContext, window); !success) return false;
+		}//End for
+		return true;
+	}//End RenderAllActiveWindows
+	
+	bool CreateNewWindow(const char* windowTitle, struct nk_rect windowStartSize)
+	{
+		auto temp = new Template();
+		auto* newWindow = new NuklearWindow(windowTitle, temp);
+		activeNuklearWindows_.push_back(newWindow);
+		return true;
+	}//End CreateNewWindow
+
+
 };
 #endif

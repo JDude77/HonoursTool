@@ -4,6 +4,7 @@
 
 #include "../Shared/DataInterfaces.h"
 #include "../Shared/DataTypes.h"
+#include "../Validation/ValidationRule.h"
 
 #include <string>
 using std::string;
@@ -11,12 +12,12 @@ using std::string;
 using std::vector;
 
 //Forward Declarations
-class ValidationRule;
+//class ValidationRule;
 
 class TemplateField : public IDelete
 {
 public:
-	int Delete() override;
+	int Delete() override{return 1;};
 
 private:
 	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name

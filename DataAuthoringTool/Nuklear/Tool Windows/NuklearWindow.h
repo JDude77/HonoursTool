@@ -17,15 +17,16 @@ class PrimaryData;
 
 struct NuklearWindow
 {
-	NuklearWindow(const char* windowTitle, PrimaryData* windowData);
-	~NuklearWindow();
+	NuklearWindow(const char* windowTitle, PrimaryData* windowData): windowData_(windowData), windowTitle_(windowTitle)
+	{};
+	~NuklearWindow(){};
 	bool UpdateWindowTitle(const char* newWindowTitle);
-	char* GetWindowTitle() { return windowTitle_; }
+	const char* GetWindowTitle() { return windowTitle_; }
 	shared_ptr<PrimaryData> GetWindowData() { return windowData_; }
 
 private:
 	shared_ptr<PrimaryData> windowData_ = nullptr;
-	char* windowTitle_;
+	const char* windowTitle_;
 	WINDOW_TYPE windowType_ = NONE;
 };
 #endif
