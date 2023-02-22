@@ -13,7 +13,7 @@ using std::vector;
 class ValidationRule;
 class TemplateField;
 
-class Template : public ISave, public ILoad, public IExport, public IDelete
+class Template : public PrimaryData
 {
 public:
 	int Save() override;
@@ -22,8 +22,6 @@ public:
 	int Delete() override;
 
 private:
-	string name_;
-	string id_;
 	vector<TemplateField> fields_;
 };
 #endif

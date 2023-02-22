@@ -40,7 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Nuklear\Tool Windows\NuklearWindowManager.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

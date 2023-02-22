@@ -15,7 +15,7 @@ using std::shared_ptr;
 class Template;
 class MemberField;
 
-class Member : public ISave, public ILoad, public IExport, public IDelete, public IValidate
+class Member : public PrimaryData, public IValidate
 {
 public:
 	int Save() override;
@@ -25,8 +25,6 @@ public:
 	int Validate() override;
 
 private:
-	string id_;
-	string name_;
 	shared_ptr<Template> type_ = nullptr;
 	vector<MemberField> fields_;
 };

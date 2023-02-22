@@ -1,6 +1,9 @@
 #pragma once
 #ifndef DATA_INTERFACES
 #define DATA_INTERFACES
+#include <string>
+using std::string;
+
 class ISave
 {
 	public:
@@ -29,5 +32,30 @@ class IExport
 {
 	public:
 	virtual int Export() = 0;
+};
+
+class PrimaryData : ISave, ILoad, IExport, IDelete
+{
+public:
+	virtual int Save() override = 0;
+	virtual int Load() override = 0;
+	virtual int Delete() override = 0;
+	virtual int Export() override = 0;
+
+	char* GetNameBuffer() { return nameBuffer_; }
+	char* GetIDBuffer() { return idBuffer_; }
+	int* GetNameBufferCurrentLength() { return &nameBufferCurrentLength_; }
+	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength; }
+	static int GetBufferMax() { return bufferMax_; }
+
+protected:
+	constexpr static int bufferMax_ = 32;
+
+	char nameBuffer_[bufferMax_] = {};
+	int nameBufferCurrentLength_ = 0;
+	char idBuffer_[bufferMax_] = {};
+	int idBufferCurrentLength = 0;
+	string name_;
+	string id_;
 };
 #endif

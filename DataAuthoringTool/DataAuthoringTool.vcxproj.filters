@@ -104,8 +104,5 @@
     <ClCompile Include="Renderer\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Nuklear\Tool Windows\NuklearWindowManager.cpp">
-      <Filter>Source Files\Nuklear\Tool Windows</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@ using std::pair;
 class Member;
 class Template;
 
-class Group : public ISave, public ILoad, public IExport, public IDelete, public IValidate
+class Group : public PrimaryData, public IValidate
 {
 public:
 	int Save() override;
@@ -27,8 +27,6 @@ public:
 	int Export() override;
 
 private:
-	string id_;
-	string name_;
 	//String: Member ID, Shared Pointer: Member pointer to be re-retrieved using the ID if memory location changes
 	vector<pair<string, shared_ptr<Member>>> members_;
 	//String: Template ID, Shared Pointer: Template pointer to be re-retrieved using the ID if memory location changes
