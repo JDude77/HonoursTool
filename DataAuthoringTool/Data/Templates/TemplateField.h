@@ -17,7 +17,7 @@ using std::vector;
 class TemplateField : public IDelete
 {
 public:
-	int Delete() override{return 1;};
+	int Delete() override;
 
 private:
 	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name

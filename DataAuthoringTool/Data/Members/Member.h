@@ -24,6 +24,8 @@ public:
 	int Delete() override;
 	int Validate() override;
 
+	shared_ptr<Template> GetType() { return type_; }
+
 private:
 	shared_ptr<Template> type_ = nullptr;
 	vector<MemberField> fields_;

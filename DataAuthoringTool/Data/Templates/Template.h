@@ -16,6 +16,7 @@ using std::vector;
 class Template : public PrimaryData
 {
 public:
+	Template() = default;
 	int Save() override{return 1;};
 	int Load() override{return 1;};
 	int Export() override{return 1;};

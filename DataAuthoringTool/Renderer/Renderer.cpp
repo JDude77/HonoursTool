@@ -31,7 +31,6 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
 
 	nuklearWindowManager_ = new NuklearWindowManager();
-	nuklearWindowManager_->CreateNewWindow("Test Window", nk_rect(10, 10, 250, 250));
 }//End Renderer Constructor
 
 Renderer::~Renderer()

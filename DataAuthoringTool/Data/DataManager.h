@@ -6,6 +6,8 @@
 using std::map;
 #include <string>
 using std::string;
+#include <vector>
+using std::vector;
 
 //Forward Declarations
 class Template;
@@ -21,8 +23,15 @@ class DataManager
 	//String: Group's ID
 	map<string, Group> groups_;
 
+public:
+	template <class Type>
+	vector<Type> GetAllInstancesOfType(Type);
+
 	template <class Instance>
 	void AddInstanceToMap(Instance instance);
+
+	template <class Instance>
+	Instance GetInstanceFromMap(Instance instance);
 
 	//To support user-defined IDs
 	template <class Instance>

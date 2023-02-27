@@ -1,0 +1,6 @@
+Drop-down selectable box (for selecting template type of member):
+	nk_combo(nkContext, array of template names, length of previous array, current selected value, dropdown menu height, item size in dropdown)
+	size is restricted by any previously set layout_row settings
+
+Check documentation for instructions on more granular control over layouts
+I ain't writing all that shit here again
