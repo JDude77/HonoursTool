@@ -25,8 +25,10 @@ public:
 	int Validate() override;
 
 	shared_ptr<Template> GetType() { return type_; }
+	int GetTemplateIndex() { return templateIndex_; }
 
 private:
+	int templateIndex_ = 0;
 	shared_ptr<Template> type_ = nullptr;
 	vector<MemberField> fields_;
 };

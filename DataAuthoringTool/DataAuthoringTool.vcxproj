@@ -39,6 +39,7 @@
     <ClInclude Include="Data\Validation\ValidationRule.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Data\DataManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
   </ItemGroup>

@@ -4,12 +4,15 @@
 
 #include <map>
 using std::map;
+#include <memory>
+using std::shared_ptr;
 #include <string>
 using std::string;
 #include <vector>
 using std::vector;
 
 //Forward Declarations
+class PrimaryData;
 class Template;
 class Member;
 class Group;
@@ -18,26 +21,30 @@ class DataManager
 {
 	//String: Template's ID
 	map<string, Template> templates_;
+	int numberOfTemplates_ = 0;
 	//String: Member's ID
 	map<string, Member> members_;
+	int numberOfMembers_ = 0;
 	//String: Group's ID
 	map<string, Group> groups_;
+	int numberOfGroups_ = 0;
 
+	vector<PrimaryData> GetAllMembers();
+	vector<PrimaryData> GetAllTemplates();
+	vector<PrimaryData> GetAllGroups();
+
+	[[nodiscard]] int GetNumberOfTemplates() const { return numberOfTemplates_; }
+	[[nodiscard]] int GetNumberOfMembers() const { return numberOfMembers_; }
+	[[nodiscard]] int GetNumberOfGroups() const { return numberOfGroups_; }
 public:
-	template <class Type>
-	vector<Type> GetAllInstancesOfType(Type);
 
-	template <class Instance>
-	void AddInstanceToMap(Instance instance);
-
-	template <class Instance>
-	Instance GetInstanceFromMap(Instance instance);
+	[[nodiscard]] vector<PrimaryData> GetAllInstancesOfType(const shared_ptr<PrimaryData>& type);
+	
+	void AddInstanceToDataMap(PrimaryData instance);
 
 	//To support user-defined IDs
-	template <class Instance>
-	void UpdateInstanceIDInMap(Instance instance);
+	void UpdateInstanceIDInMap(PrimaryData instance);
 
-	template <class Instance>
-	void RemoveInstanceFromMapAndDelete(Instance instance);
+	//void RemoveInstanceFromMapAndDelete(Instance instance);
 };
 #endif

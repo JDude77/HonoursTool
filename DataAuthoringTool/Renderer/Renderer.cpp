@@ -13,6 +13,7 @@
 #include "../Nuklear/Core/nuklear_d3d11.h"
 
 #include "../Nuklear/Tool Windows/NuklearWindowManager.h"
+#include "../Data/DataManager.h"
 
 constexpr auto MAX_VERTEX_BUFFER = 512 * 1024;
 constexpr auto MAX_INDEX_BUFFER = 128 * 1024;
@@ -30,7 +31,7 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
 
-	nuklearWindowManager_ = new NuklearWindowManager();
+	nuklearWindowManager_ = new NuklearWindowManager(std::make_shared<DataManager>());
 }//End Renderer Constructor
 
 Renderer::~Renderer()
