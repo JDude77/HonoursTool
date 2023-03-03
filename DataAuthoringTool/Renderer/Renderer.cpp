@@ -23,7 +23,7 @@ static ID3D11Device* device;
 static ID3D11DeviceContext* context;
 static ID3D11RenderTargetView* renderTargetView;
 
-Renderer::Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, const std::string& fontName, const int fontSize)
+Renderer::Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, shared_ptr<DataManager> dataManager, const std::string& fontName, const int fontSize)
 {
 	InitWindow(windowName, windowWidth, windowHeight);
 	
@@ -31,7 +31,7 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
 
-	nuklearWindowManager_ = new NuklearWindowManager(std::make_shared<DataManager>());
+	nuklearWindowManager_ = new NuklearWindowManager(dataManager);
 }//End Renderer Constructor
 
 Renderer::~Renderer()

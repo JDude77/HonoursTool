@@ -12,6 +12,7 @@
 struct nk_colorf;
 struct nk_context;
 class NuklearWindowManager;
+class DataManager;
 
 class Renderer
 {
@@ -44,7 +45,7 @@ private:
 	void DrawGUI();
 
 public:
-	Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, const std::string& fontName = "", const int fontSize = 12);
+	Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, shared_ptr<DataManager> dataManager, const std::string& fontName = "", const int fontSize = 12);
 	~Renderer();
 
 	int Update();

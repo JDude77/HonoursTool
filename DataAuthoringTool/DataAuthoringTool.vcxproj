@@ -41,6 +41,7 @@
   <ItemGroup>
     <ClCompile Include="Data\DataManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Nuklear\Tool Windows\NuklearWindow.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -16,7 +16,7 @@ using std::vector;
 class NuklearWindowManager
 {
 private:
-	static vector<shared_ptr<Template>> cachedTemplates_;
+	static shared_ptr<vector<Template>> cachedTemplates_;
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
 
@@ -24,12 +24,12 @@ private:
 	{
 		//Update cached templates
 		//TODO: Refactor this to not happen every frame of rendering a member window - only on templates updating
-		cachedTemplates_ = dataManager_->GetAllInstancesOfType(memberData->GetType());
+		cachedTemplates_ = std::make_shared<vector<Template>>(dataManager_->GetAllTemplates());
 
 		vector<char*> templateNames;
-		for (const auto& cachedTemplate : cachedTemplates_)
+		for (int i = 0; i < cachedTemplates_->size(); i++)
 		{
-			templateNames.push_back(cachedTemplate->GetNameBuffer());
+			templateNames.push_back(cachedTemplates_->at(i).GetNameBuffer());
 		}//End for
 		
 		//Render templates dropdown
@@ -101,7 +101,18 @@ private:
 	}//End RenderWindow
 
 public:
-	NuklearWindowManager(shared_ptr<DataManager> dataManager);
+	NuklearWindowManager(shared_ptr<DataManager> dataManager)
+	{
+		//Create landing window
+		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::LANDING, nullptr));
+
+		//Create template window
+		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::TEMPLATE_WINDOW, std::make_shared<Template>(new Template())));
+
+		//Create member window
+		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::MEMBER_WINDOW, std::make_shared<Member>(new Member())));
+	}//End constructor
+
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
 	{
 		for (NuklearWindow* window : activeNuklearWindows_)

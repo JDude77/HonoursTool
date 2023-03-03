@@ -7,9 +7,9 @@ using std::shared_ptr;
 enum WINDOW_TYPE
 {
 	NONE = -1,
-	MEMBER,
-	GROUP,
-	TEMPLATE,
+	MEMBER_WINDOW,
+	GROUP_WINDOW,
+	TEMPLATE_WINDOW,
 	LANDING
 };
 
@@ -17,7 +17,7 @@ class PrimaryData;
 
 struct NuklearWindow
 {
-	NuklearWindow(const char* windowTitle, shared_ptr<PrimaryData> windowData);
+	NuklearWindow(WINDOW_TYPE windowType, shared_ptr<PrimaryData> windowData);
 	~NuklearWindow();
 	bool UpdateWindowTitle(const char* newWindowTitle);
 	const char* GetWindowTitle() { return windowTitle_; }

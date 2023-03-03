@@ -29,16 +29,15 @@ class DataManager
 	map<string, Group> groups_;
 	int numberOfGroups_ = 0;
 
-	vector<PrimaryData> GetAllMembers();
-	vector<PrimaryData> GetAllTemplates();
-	vector<PrimaryData> GetAllGroups();
+	
 
 	[[nodiscard]] int GetNumberOfTemplates() const { return numberOfTemplates_; }
 	[[nodiscard]] int GetNumberOfMembers() const { return numberOfMembers_; }
 	[[nodiscard]] int GetNumberOfGroups() const { return numberOfGroups_; }
 public:
-
-	[[nodiscard]] vector<PrimaryData> GetAllInstancesOfType(const shared_ptr<PrimaryData>& type);
+	vector<Member> GetAllMembers();
+	vector<Template> GetAllTemplates();
+	vector<Group> GetAllGroups();
 	
 	void AddInstanceToDataMap(PrimaryData instance);
 
