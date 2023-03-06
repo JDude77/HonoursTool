@@ -12,6 +12,8 @@
 #include "../../Data/Groups/Group.h"
 #include "../../Data/Templates/Template.h"
 using std::vector;
+using std::dynamic_pointer_cast;
+using std::make_shared;
 
 class NuklearWindowManager
 {
@@ -20,16 +22,16 @@ private:
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
 
-	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, shared_ptr<Member> memberData)
+	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData)
 	{
 		//Update cached templates
 		//TODO: Refactor this to not happen every frame of rendering a member window - only on templates updating
-		cachedTemplates_ = std::make_shared<vector<Template>>(dataManager_->GetAllTemplates());
+		cachedTemplates_ = make_shared<vector<Template>>(dataManager_->GetAllTemplates());
 
 		vector<char*> templateNames;
-		for (int i = 0; i < cachedTemplates_->size(); i++)
+		for (auto& temp : *cachedTemplates_)
 		{
-			templateNames.push_back(cachedTemplates_->at(i).GetNameBuffer());
+			templateNames.push_back(temp.GetNameBuffer());
 		}//End for
 		
 		//Render templates dropdown
@@ -46,18 +48,25 @@ private:
 			nk_label(nuklearContext, "ID: ", NK_TEXT_LEFT);
 			nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, windowData->GetIDBuffer(), windowData->GetIDBufferCurrentLength(), windowData->GetBufferMax(), nk_filter_default);
 
-		nk_layout_row_dynamic(nuklearContext, 24, 1);
-			//If the data we're handling is a member
-			if(auto memberData = std::dynamic_pointer_cast<Member>(windowData))
-			{
+		//If the data we're handling is a member
+		if(const auto memberData = dynamic_pointer_cast<Member>(windowData))
+		{
+			//Member/Template Type dropdown
+			nk_layout_row_dynamic(nuklearContext, 24, 1);
+				nk_label(nuklearContext, "Member Template/Type", NK_TEXT_LEFT);
+			nk_layout_row_dynamic(nuklearContext, 24, 2);
 				RenderTemplateHeaderDropdown(nuklearContext, memberData);
-			}//End if
+				//Validate All Fields button
+				if(nk_button_label(nuklearContext, "VALIDATE ALL")) memberData->Validate();
+		}//End if
 
-			//If the data we're handling is a group
-			else if(const auto groupData = std::dynamic_pointer_cast<Group>(windowData))
-			{
+		//If the data we're handling is a group
+		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
+		{
+			//Validate All Members button
+			nk_layout_row_dynamic(nuklearContext, 24, 1);
 				if(nk_button_label(nuklearContext, "VALIDATE")) groupData->Validate();
-			}//End else if
+		}//End else if
 
 		return true;
 	}//End RenderWindowHeader
@@ -73,6 +82,61 @@ private:
 		return true;
 	}//End RenderWindowFooter
 
+	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
+	{
+		//LANDING
+		if(windowData == nullptr)
+		{
+			//Template Button
+
+			//Member Button
+
+			//Group Button
+		}//End if
+
+		//MEMBER
+		else if(const auto memberData = dynamic_pointer_cast<Member>(windowData))
+		{
+			//For Each Field
+				//1 Column Row
+
+					//Name of field label followed by type
+
+				//3 Column Row
+
+					//Input field for data
+
+					//Delete/Clear button for field
+
+					//Validate button for field
+
+		}//End else if
+
+		//GROUP
+		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
+		{
+			//Future me problem
+		}//End else if
+
+		//TEMPLATE
+		else if (const auto templateData = dynamic_pointer_cast<Template>(windowData))
+		{
+			//For Each Field
+
+				//Field Name
+
+				//Field Type
+
+				//Validation Rules
+
+				//Delete Field Button
+
+			//Add Field Button
+		}//End else if
+
+		return false;
+	}//End RenderWindowBody
+
 	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
 	{
 		shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData();
@@ -83,15 +147,30 @@ private:
 		    NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
 			{
 				//Render Header
-				if(!RenderWindowHeader(nuklearContext, windowData)) return false;
+				if(nuklearWindow->GetHasHeader())
+				{
+					if(!RenderWindowHeader(nuklearContext, windowData)) return false;
+				}//End if
 
 				//Render Body
+				if(!RenderWindowBody(nuklearContext, windowData)) return false;
 
 				//Render Footer
-				if(!RenderWindowFooter(nuklearContext, windowData)) return false;
+				if(nuklearWindow->GetHasFooter())
+				{
+					if(!RenderWindowFooter(nuklearContext, windowData)) return false;
+				}//End if
 			}//End if
 			nk_end(nuklearContext);
 		}//End if
+
+		//Landing window has no data, as it is essentially just buttons to open subwindows
+		else if(nuklearWindow->GetWindowType() == LANDING)
+		{
+			if(RenderWindowBody(nuklearContext, nullptr)) return false;
+		}//End else if
+
+		//If THIS is reached, I've messed up
 		else
 		{
 			return false;
@@ -101,16 +180,16 @@ private:
 	}//End RenderWindow
 
 public:
-	NuklearWindowManager(shared_ptr<DataManager> dataManager)
+	NuklearWindowManager(shared_ptr<DataManager> dataManager) : dataManager_(std::move(dataManager))
 	{
 		//Create landing window
-		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::LANDING, nullptr));
+		activeNuklearWindows_.push_back(new NuklearWindow(LANDING, nullptr));
 
 		//Create template window
-		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::TEMPLATE_WINDOW, std::make_shared<Template>(new Template())));
+		activeNuklearWindows_.push_back(new NuklearWindow(TEMPLATE_WINDOW, make_shared<Template>(Template())));
 
 		//Create member window
-		activeNuklearWindows_.push_back(new NuklearWindow(WINDOW_TYPE::MEMBER_WINDOW, std::make_shared<Member>(new Member())));
+		activeNuklearWindows_.push_back(new NuklearWindow(MEMBER_WINDOW, make_shared<Member>(Member())));
 	}//End constructor
 
 	bool RenderAllActiveWindows(nk_context* nuklearContext)

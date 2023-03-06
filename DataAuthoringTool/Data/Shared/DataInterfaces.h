@@ -41,7 +41,7 @@ public:
 	{
 		delete nameBuffer_;
 		delete idBuffer_;
-	};
+	}
 
 	virtual int Save() override = 0;
 	virtual int Load() override = 0;

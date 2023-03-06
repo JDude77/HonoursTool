@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include <utility>
+
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -31,7 +33,7 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
 
-	nuklearWindowManager_ = new NuklearWindowManager(dataManager);
+	nuklearWindowManager_ = new NuklearWindowManager(std::move(dataManager));
 }//End Renderer Constructor
 
 Renderer::~Renderer()
@@ -85,7 +87,7 @@ void Renderer::InitNuklear(const int windowWidth, const int windowHeight, const 
 	backgroundColour_->a = 1.0f;
 }//End InitNuklear
 
-void Renderer::InitD3D11(int windowWidth, int windowHeight)
+void Renderer::InitD3D11(const int windowWidth, const int windowHeight)
 {
 	memset(&swapChainDesc_, 0, sizeof(swapChainDesc_));
 	swapChainDesc_.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

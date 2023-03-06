@@ -6,6 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <d3d11.h>
+#include <memory>
 #include <string>
 
 //Forward Declarations
@@ -45,7 +46,7 @@ private:
 	void DrawGUI();
 
 public:
-	Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, shared_ptr<DataManager> dataManager, const std::string& fontName = "", const int fontSize = 12);
+	Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, std::shared_ptr<DataManager> dataManager, const std::string& fontName = "", const int fontSize = 12);
 	~Renderer();
 
 	int Update();
