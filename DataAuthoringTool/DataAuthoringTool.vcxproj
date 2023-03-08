@@ -25,6 +25,7 @@
     <ClInclude Include="Data\Groups\Group.h" />
     <ClInclude Include="Data\Members\Member.h" />
     <ClInclude Include="Data\Members\MemberField.h" />
+    <ClInclude Include="Field.h" />
     <ClInclude Include="Nuklear\Tool Windows\NuklearWindow.h" />
     <ClInclude Include="Nuklear\Tool Windows\NuklearWindowManager.h" />
     <ClInclude Include="Nuklear\Core\nuklear.h" />

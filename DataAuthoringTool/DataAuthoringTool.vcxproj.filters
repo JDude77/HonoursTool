@@ -99,6 +99,9 @@
     <ClInclude Include="Nuklear\Tool Windows\NuklearWindow.h">
       <Filter>Header Files\Nuklear\Tool Windows</Filter>
     </ClInclude>
+    <ClInclude Include="Field.h">
+      <Filter>Header Files\Data\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

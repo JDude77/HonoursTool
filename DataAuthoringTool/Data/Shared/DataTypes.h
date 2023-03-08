@@ -1,13 +1,29 @@
 #pragma once
 #ifndef DATA_TYPES
 #define DATA_TYPES
-enum DataType
+
+static struct DataType
 {
-	None = -1,
-	String,
-	Integer,
-	Float,
-	Char,
-	Boolean
+	enum DATA_TYPE
+	{
+		NONE,
+		STRING,
+		INTEGER,
+		FLOAT,
+		CHAR,
+		BOOLEAN
+	};
+
+	inline static const char* typeLabels_[] =
+	{
+		"NO DATA TYPE SELECTED",
+		"String (text)",
+		"Integer (whole number)",
+		"Float (floating-point number)",
+		"Char (single-character)",
+		"Boolean (true/false tickbox)"
+	};
+
+	static constexpr int typeLabelsCount = 6;
 };
 #endif

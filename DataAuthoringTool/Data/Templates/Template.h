@@ -17,11 +17,15 @@ class Template : public PrimaryData
 {
 public:
 	Template() = default;
-	int Save() override{return 1;};
+	int Save() override{return 1;}
 	int Load() override{return 1;};
 	int Export() override{return 1;};
 	int Delete() override{return 1;};
 
+	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
+	TemplateField GetFieldAtIndex(int index);
+	int AddNewField();
+	
 private:
 	vector<TemplateField> fields_;
 };

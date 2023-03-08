@@ -7,9 +7,11 @@
 #include <vector>
 
 #include "../../Data/Shared/DataInterfaces.h"
+#include "../../Data/Shared/DataTypes.h"
 #include "../../Data/Members/Member.h"
 #include "../../Data/DataManager.h"
 #include "../../Data/Groups/Group.h"
+#include "../../Data/Members/MemberField.h"
 #include "../../Data/Templates/Template.h"
 using std::vector;
 using std::dynamic_pointer_cast;
@@ -21,6 +23,7 @@ private:
 	static shared_ptr<vector<Template>> cachedTemplates_;
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
+	static DataType data_;
 
 	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData)
 	{
@@ -97,19 +100,62 @@ private:
 		//MEMBER
 		else if(const auto memberData = dynamic_pointer_cast<Member>(windowData))
 		{
-			//For Each Field
-				//1 Column Row
+			for (int i = 0; i < memberData->GetNumberOfFields(); i++)
+			{
+				MemberField field = memberData->GetFieldAtIndex(i);
 
+				nk_layout_row_dynamic(nuklearContext, 24, 1);
 					//Name of field label followed by type
+					nk_label(nuklearContext, field.GetNameAndTypeLabel(), NK_LEFT);
 
-				//3 Column Row
-
+				nk_layout_row_dynamic(nuklearContext, 24, 3);
 					//Input field for data
+					switch(field.GetDataType())
+					{
+						case DataType::NONE:
+							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
+							break;
 
-					//Delete/Clear button for field
+						case DataType::STRING:
+							//TODO: Add functionality for applying length limit validation rule to max length
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_default);
+							break;
 
-					//Validate button for field
+						case DataType::INTEGER:
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_decimal);
+							break;
 
+						case DataType::FLOAT:
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_float);
+							break;
+
+						case DataType::CHAR:
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), 1, nk_filter_default);
+							break;
+
+						case DataType::BOOLEAN:
+							nk_checkbox_label(nuklearContext, "", reinterpret_cast<nk_bool*>(field.GetBooleanData()));
+							break;
+
+						default: 
+							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
+					}//End switch
+
+					if(field.GetDataType() != DataType::BOOLEAN)
+					{
+						//Delete/Clear button for field
+						if(nk_button_label(nuklearContext, "CLEAR FIELD")) field.Delete();
+
+						//Validate button for field
+						if(nk_button_label(nuklearContext, "VALIDATE")) field.Validate();
+					}//End if
+					else
+					{
+						//Two blank labels to fill out columns
+						nk_label(nuklearContext, "", NK_LEFT);
+						nk_label(nuklearContext, "", NK_LEFT);
+					}//End else
+			}//End for
 		}//End else if
 
 		//GROUP
@@ -122,16 +168,28 @@ private:
 		else if (const auto templateData = dynamic_pointer_cast<Template>(windowData))
 		{
 			//For Each Field
-
+			for (int i = 0; i < templateData->GetNumberOfFields(); i++)
+			{
 				//Field Name
+				nk_layout_row_dynamic(nuklearContext, 24, 4);
+					nk_label(nuklearContext, "Field Name", NK_LEFT);
+					nk_label(nuklearContext, "Type", NK_LEFT);
+					nk_label(nuklearContext, "Validation Rules", NK_LEFT);
+					nk_label(nuklearContext, "", NK_LEFT);
 
-				//Field Type
+					TemplateField field = templateData->GetFieldAtIndex(i);
+					//Field Name
+					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetIDBuffer(), field.GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
+					//Field Type
+					nk_combo(nuklearContext, DataType::typeLabels_, DataType::typeLabelsCount, field.GetDataType(), 24, nk_vec2(300, 300));
+					//Validation Rules
 
-				//Validation Rules
-
-				//Delete Field Button
+					//Delete Field Button
+					if(nk_button_label(nuklearContext, "DELETE FIELD")) field.Delete();
+			}//End for
 
 			//Add Field Button
+			if(nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
 		}//End else if
 
 		return false;
