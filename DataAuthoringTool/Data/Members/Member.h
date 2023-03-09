@@ -3,6 +3,7 @@
 #define MEMBER
 
 #include "../Shared/DataInterfaces.h"
+#include "MemberField.h"
 
 #include <string>
 using std::string;

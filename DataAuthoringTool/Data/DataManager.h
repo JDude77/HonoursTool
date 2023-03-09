@@ -12,10 +12,9 @@ using std::string;
 using std::vector;
 
 //Forward Declarations
-class PrimaryData;
-class Template;
-class Member;
-class Group;
+#include "Members/Member.h"
+#include "Templates/Template.h"
+#include "Groups/Group.h"
 
 class DataManager
 {
@@ -29,8 +28,6 @@ class DataManager
 	map<string, Group> groups_;
 	int numberOfGroups_ = 0;
 
-	
-
 	[[nodiscard]] int GetNumberOfTemplates() const { return numberOfTemplates_; }
 	[[nodiscard]] int GetNumberOfMembers() const { return numberOfMembers_; }
 	[[nodiscard]] int GetNumberOfGroups() const { return numberOfGroups_; }
@@ -39,10 +36,14 @@ public:
 	vector<Template> GetAllTemplates();
 	vector<Group> GetAllGroups();
 	
-	void AddInstanceToDataMap(PrimaryData instance);
+	void AddInstanceToDataMap(Member instance);
+	void AddInstanceToDataMap(Template instance);
+	void AddInstanceToDataMap(Group instance);
 
 	//To support user-defined IDs
-	void UpdateInstanceIDInMap(PrimaryData instance);
+	//void UpdateInstanceIDInMap(Member instance);
+	//void UpdateInstanceIDInMap(Template instance);
+	//void UpdateInstanceIDInMap(Group instance);
 
 	//void RemoveInstanceFromMapAndDelete(Instance instance);
 };

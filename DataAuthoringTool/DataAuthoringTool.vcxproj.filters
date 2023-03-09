@@ -49,6 +49,15 @@
     <Filter Include="Source Files\Data">
       <UniqueIdentifier>{1b02c688-d222-4a5c-a526-b6eef3828c31}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Data\Members">
+      <UniqueIdentifier>{55b2e7eb-04c1-4492-9ac3-eaa33370a793}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data\Templates">
+      <UniqueIdentifier>{8147938b-57f6-4526-bb53-ca80204e994f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Data\Groups">
+      <UniqueIdentifier>{c8892d3e-2903-410e-b467-ed12257d12db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderer\Renderer.h">
@@ -115,6 +124,21 @@
     </ClCompile>
     <ClCompile Include="Nuklear\Tool Windows\NuklearWindow.cpp">
       <Filter>Source Files\Nuklear\Tool Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Data\Members\MemberField.cpp">
+      <Filter>Source Files\Data\Members</Filter>
+    </ClCompile>
+    <ClCompile Include="Data\Members\Member.cpp">
+      <Filter>Source Files\Data\Members</Filter>
+    </ClCompile>
+    <ClCompile Include="Data\Templates\Template.cpp">
+      <Filter>Source Files\Data\Templates</Filter>
+    </ClCompile>
+    <ClCompile Include="Data\Templates\TemplateField.cpp">
+      <Filter>Source Files\Data\Templates</Filter>
+    </ClCompile>
+    <ClCompile Include="Data\Groups\Group.cpp">
+      <Filter>Source Files\Data\Groups</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

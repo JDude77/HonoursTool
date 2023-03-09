@@ -37,12 +37,6 @@ class IExport
 class PrimaryData : ISave, ILoad, IExport, IDelete
 {
 public:
-	~PrimaryData()
-	{
-		delete nameBuffer_;
-		delete idBuffer_;
-	}
-
 	virtual int Save() override = 0;
 	virtual int Load() override = 0;
 	virtual int Delete() override = 0;

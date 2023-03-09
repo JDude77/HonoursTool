@@ -2,10 +2,6 @@
 
 #include <ranges>
 
-#include "Members/Member.h"
-#include "Templates/Template.h"
-#include "Groups/Group.h"
-
 using std::reinterpret_pointer_cast;
 
 vector<Member> DataManager::GetAllMembers()
@@ -40,3 +36,24 @@ vector<Group> DataManager::GetAllGroups()
 
 	return groups;
 }//End GetAllGroups
+
+void DataManager::AddInstanceToDataMap(Member instance)
+{
+	string id;
+	id.append(instance.GetIDBuffer());
+	members_.insert({id, instance});
+}//End AddInstanceToDataMap
+
+void DataManager::AddInstanceToDataMap(Template instance)
+{
+	string id;
+	id.append(instance.GetIDBuffer());
+	templates_.insert({id, instance});
+}//End AddInstanceToDataMap
+
+void DataManager::AddInstanceToDataMap(Group instance)
+{
+	string id;
+	id.append(instance.GetIDBuffer());
+	groups_.insert({id, instance});
+}//End AddInstanceToDataMap

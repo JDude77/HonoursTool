@@ -1,6 +1,14 @@
 #include "NuklearWindow.h"
 
-NuklearWindow::NuklearWindow(WINDOW_TYPE windowType, shared_ptr<PrimaryData> windowData) : windowData_(std::move(windowData)), windowType_(windowType)
+#include "../../Data/DataManager.h"
+#include "../../Data/Members/Member.h"
+#include "../../Data/Templates/Template.h"
+#include "../../Data/Groups/Group.h"
+#include "../../Data/Shared/DataInterfaces.h"
+
+using std::dynamic_pointer_cast;
+
+NuklearWindow::NuklearWindow(WINDOW_TYPE windowType, shared_ptr<DataManager> dataManager, shared_ptr<PrimaryData> windowData, const char* windowTitle) : windowData_(windowData), windowType_(windowType)
 {
 	switch (windowType_)
 	{
@@ -13,29 +21,38 @@ NuklearWindow::NuklearWindow(WINDOW_TYPE windowType, shared_ptr<PrimaryData> win
 	case LANDING:
 		hasHeader_ = false;
 		hasFooter_ = false;
-		windowTitle_ = "Data Authoring Tool - Press Button To Open Window";
+		windowTitle_ = windowTitle == nullptr ? "Data Authoring Tool - Press Button To Open Window" : windowTitle;
 		break;
 
 	case MEMBER_WINDOW:
 		hasHeader_ = true;
 		hasFooter_ = true;
-		windowTitle_ = "Member Creator";
+		windowTitle_ = windowTitle == nullptr ? "Member Creator" : windowTitle;
+		{
+			auto data = dynamic_pointer_cast<Member>(windowData);
+			dataManager->AddInstanceToDataMap(Member(*data));
+		}//End pointer cast
 		break;
 
 	case TEMPLATE_WINDOW:
 		hasHeader_ = true;
 		hasFooter_ = true;
-		windowTitle_ = "Template Creator";
+		windowTitle_ = windowTitle == nullptr ? "Template Creator" : windowTitle;
+		{
+			auto data = dynamic_pointer_cast<Template>(windowData);
+
+			dataManager->AddInstanceToDataMap(Template(*data));
+		}//End pointer cast
 		break;
 	
 	case GROUP_WINDOW: 
 		hasHeader_ = true;
 		hasFooter_ = true;
-		windowTitle_ = "Group Creator";
-		break;
-
-	default:
-		
+		windowTitle_ = windowTitle == nullptr ? "Group Creator" : windowTitle;
+		{
+			auto data = dynamic_pointer_cast<Group>(windowData);
+			dataManager->AddInstanceToDataMap(Group(*data));
+		}//End pointer cast
 		break;
 	}//End switch
 }//End constructor

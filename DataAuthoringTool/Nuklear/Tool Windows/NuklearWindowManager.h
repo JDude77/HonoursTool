@@ -13,6 +13,7 @@
 #include "../../Data/Groups/Group.h"
 #include "../../Data/Members/MemberField.h"
 #include "../../Data/Templates/Template.h"
+
 using std::vector;
 using std::dynamic_pointer_cast;
 using std::make_shared;
@@ -20,10 +21,10 @@ using std::make_shared;
 class NuklearWindowManager
 {
 private:
-	static shared_ptr<vector<Template>> cachedTemplates_;
+	inline static shared_ptr<vector<Template>> cachedTemplates_;
+
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
-	static DataType data_;
 
 	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData)
 	{
@@ -192,7 +193,7 @@ private:
 			if(nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
 		}//End else if
 
-		return false;
+		return true;
 	}//End RenderWindowBody
 
 	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
@@ -218,14 +219,20 @@ private:
 				{
 					if(!RenderWindowFooter(nuklearContext, windowData)) return false;
 				}//End if
-			}//End if
+			}//End nk_begin
 			nk_end(nuklearContext);
 		}//End if
 
 		//Landing window has no data, as it is essentially just buttons to open subwindows
 		else if(nuklearWindow->GetWindowType() == LANDING)
 		{
-			if(RenderWindowBody(nuklearContext, nullptr)) return false;
+			if(nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, 500, 500),
+				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+			{
+				if(!RenderWindowBody(nuklearContext, nullptr)) return false;
+			}//End nk_begin
+			nk_end(nuklearContext);
 		}//End else if
 
 		//If THIS is reached, I've messed up
@@ -241,13 +248,13 @@ public:
 	NuklearWindowManager(shared_ptr<DataManager> dataManager) : dataManager_(std::move(dataManager))
 	{
 		//Create landing window
-		activeNuklearWindows_.push_back(new NuklearWindow(LANDING, nullptr));
+		CreateNewWindow("Data Authoring Tool", LANDING);
 
 		//Create template window
-		activeNuklearWindows_.push_back(new NuklearWindow(TEMPLATE_WINDOW, make_shared<Template>(Template())));
+		CreateNewWindow("Test Template Window", TEMPLATE_WINDOW);
 
 		//Create member window
-		activeNuklearWindows_.push_back(new NuklearWindow(MEMBER_WINDOW, make_shared<Member>(Member())));
+		CreateNewWindow("Test Member Window", MEMBER_WINDOW);
 	}//End constructor
 
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
@@ -259,8 +266,25 @@ public:
 		return true;
 	}//End RenderAllActiveWindows
 	
-	bool CreateNewWindow(const char* windowTitle)
+	bool CreateNewWindow(const char* windowTitle, const WINDOW_TYPE windowType)
 	{
+		switch(windowType)
+		{
+			case MEMBER_WINDOW:
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member())));
+				break;
+			case GROUP_WINDOW:
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group())));
+				break;
+			case TEMPLATE_WINDOW:
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template())));
+				break;
+			case LANDING: 
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, nullptr));
+				break;
+			case NONE: return false;
+		}//End switch
+		
 		return true;
 	}//End CreateNewWindow
 };

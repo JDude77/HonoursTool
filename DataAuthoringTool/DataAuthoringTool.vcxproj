@@ -41,9 +41,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Data\DataManager.cpp" />
+    <ClCompile Include="Data\Groups\Group.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Data\Members\MemberField.cpp" />
+    <ClCompile Include="Data\Members\Member.cpp" />
     <ClCompile Include="Nuklear\Tool Windows\NuklearWindow.cpp" />
     <ClCompile Include="Renderer\Renderer.cpp" />
+    <ClCompile Include="Data\Templates\Template.cpp" />
+    <ClCompile Include="Data\Templates\TemplateField.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
