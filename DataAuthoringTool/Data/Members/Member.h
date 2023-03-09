@@ -19,6 +19,8 @@ class MemberField;
 class Member : public PrimaryData, public IValidate
 {
 public:
+	Member(): PrimaryData(-1){}
+	Member(const int internalID): PrimaryData(internalID){}
 	int Save() override;
 	int Load() override;
 	int Export() override;
@@ -28,7 +30,7 @@ public:
 	shared_ptr<Template> GetType() { return type_; }
 	int GetTemplateIndex() { return templateIndex_; }
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
-	[[nodiscard]] MemberField GetFieldAtIndex(int index);
+	[[nodiscard]] MemberField* GetFieldAtIndex(int index);
 
 private:
 	int templateIndex_ = 0;

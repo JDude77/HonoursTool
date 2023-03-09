@@ -19,9 +19,12 @@ class TemplateField : public IDelete
 public:
 	int Delete() override;
 	char* GetIDBuffer(){ return idBuffer_; }
-	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; };
+	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
+	void SetDataType(int type) { dataType_ = static_cast<DataType::DATA_TYPE>(type); typeInt_ = type; }
+	void SetDataType(DataType::DATA_TYPE type) { dataType_ = type; typeInt_ = static_cast<int>(type); }
 	static int GetBufferMax() { return bufferMax_; }
-	DataType::DATA_TYPE GetDataType() const { return dataType_; }
+	DataType::DATA_TYPE* GetDataType() { return &dataType_; }
+	int* GetDataTypeAsInt() { return &typeInt_; }
 
 private:
 	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name
@@ -32,6 +35,7 @@ private:
 
 	string id_;
 	DataType::DATA_TYPE dataType_;
+	int typeInt_;
 	vector<ValidationRule> validationRules_;
 };
 #endif

@@ -1,8 +1,8 @@
 #include "Template.h"
 
-TemplateField Template::GetFieldAtIndex(int index)
+TemplateField* Template::GetFieldAtIndex(int index)
 {
-	return fields_[index];
+	return &fields_[index];
 }//End GetFieldAtIndex
 
 int Template::AddNewField()

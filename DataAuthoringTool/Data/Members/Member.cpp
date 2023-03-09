@@ -30,7 +30,7 @@ int Member::Validate()
 	return 1;
 }//End Validate
 
-MemberField Member::GetFieldAtIndex(const int index)
+MemberField* Member::GetFieldAtIndex(const int index)
 {
-	return fields_[index];
+	return &fields_[index];
 }//End GetFieldAtIndex

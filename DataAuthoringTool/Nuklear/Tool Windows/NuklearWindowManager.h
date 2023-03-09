@@ -88,6 +88,7 @@ private:
 
 	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
 	{
+		#pragma region Landing
 		//LANDING
 		if(windowData == nullptr)
 		{
@@ -97,21 +98,23 @@ private:
 
 			//Group Button
 		}//End if
+		#pragma endregion
 
+		#pragma region Member
 		//MEMBER
 		else if(const auto memberData = dynamic_pointer_cast<Member>(windowData))
 		{
 			for (int i = 0; i < memberData->GetNumberOfFields(); i++)
 			{
-				MemberField field = memberData->GetFieldAtIndex(i);
+				MemberField* field = memberData->GetFieldAtIndex(i);
 
 				nk_layout_row_dynamic(nuklearContext, 24, 1);
 					//Name of field label followed by type
-					nk_label(nuklearContext, field.GetNameAndTypeLabel(), NK_LEFT);
+					nk_label(nuklearContext, field->GetNameAndTypeLabel(), NK_LEFT);
 
 				nk_layout_row_dynamic(nuklearContext, 24, 3);
 					//Input field for data
-					switch(field.GetDataType())
+					switch(field->GetDataType())
 					{
 						case DataType::NONE:
 							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
@@ -119,36 +122,36 @@ private:
 
 						case DataType::STRING:
 							//TODO: Add functionality for applying length limit validation rule to max length
-							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_default);
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_default);
 							break;
 
 						case DataType::INTEGER:
-							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_decimal);
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_decimal);
 							break;
 
 						case DataType::FLOAT:
-							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), *field.GetDataBufferMaxSize(), nk_filter_float);
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_float);
 							break;
 
 						case DataType::CHAR:
-							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetDataBuffer(), field.GetDataBufferCurrentSize(), 1, nk_filter_default);
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), 1, nk_filter_default);
 							break;
 
 						case DataType::BOOLEAN:
-							nk_checkbox_label(nuklearContext, "", reinterpret_cast<nk_bool*>(field.GetBooleanData()));
+							nk_checkbox_label(nuklearContext, "", reinterpret_cast<nk_bool*>(field->GetBooleanData()));
 							break;
 
 						default: 
 							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
 					}//End switch
 
-					if(field.GetDataType() != DataType::BOOLEAN)
+					if(field->GetDataType() != DataType::BOOLEAN)
 					{
 						//Delete/Clear button for field
-						if(nk_button_label(nuklearContext, "CLEAR FIELD")) field.Delete();
+						if(nk_button_label(nuklearContext, "CLEAR FIELD")) field->Delete();
 
 						//Validate button for field
-						if(nk_button_label(nuklearContext, "VALIDATE")) field.Validate();
+						if(nk_button_label(nuklearContext, "VALIDATE")) field->Validate();
 					}//End if
 					else
 					{
@@ -157,14 +160,20 @@ private:
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
 			}//End for
+			if(nk_button_label(nuklearContext, "Debug: Update Member In Data Manager")) dataManager_->UpdateMember(memberData.get());
 		}//End else if
+		#pragma endregion
 
+		#pragma region Group
 		//GROUP
 		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
 			//Future me problem
+			if(nk_button_label(nuklearContext, "Debug: Update Group In Data Manager")) dataManager_->UpdateGroup(groupData.get());
 		}//End else if
+		#pragma endregion
 
+		#pragma region Template
 		//TEMPLATE
 		else if (const auto templateData = dynamic_pointer_cast<Template>(windowData))
 		{
@@ -178,20 +187,26 @@ private:
 					nk_label(nuklearContext, "Validation Rules", NK_LEFT);
 					nk_label(nuklearContext, "", NK_LEFT);
 
-					TemplateField field = templateData->GetFieldAtIndex(i);
+					TemplateField* field = templateData->GetFieldAtIndex(i);
 					//Field Name
-					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field.GetIDBuffer(), field.GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
+					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetIDBuffer(), field->GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
 					//Field Type
-					nk_combo(nuklearContext, DataType::typeLabels_, DataType::typeLabelsCount, field.GetDataType(), 24, nk_vec2(300, 300));
-					//Validation Rules
-
+					field->SetDataType(nk_combo(nuklearContext, DataType::typeLabels_, NK_LEN(DataType::typeLabels_), *field->GetDataTypeAsInt(), 24, nk_vec2(300, 300)));
+					int temp = *field->GetDataTypeAsInt();
+					//TODO: Implement validation rules multi-select combo box
+					//Blank label temporary to preserve spacing
+					nk_label(nuklearContext, "", NK_LEFT);
 					//Delete Field Button
-					if(nk_button_label(nuklearContext, "DELETE FIELD")) field.Delete();
+					if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
 			}//End for
 
 			//Add Field Button
-			if(nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
+			nk_layout_row_dynamic(nuklearContext, 24, 1);
+				if(nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
+				
+			dataManager_->UpdateTemplate(templateData.get());
 		}//End else if
+		#pragma endregion
 
 		return true;
 	}//End RenderWindowBody
@@ -201,7 +216,7 @@ private:
 		shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData();
 		if(windowData != nullptr)
 		{
-			if(nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 100, 100),
+			if(nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 400, 400),
 		    NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 		    NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
 			{
@@ -270,14 +285,14 @@ public:
 	{
 		switch(windowType)
 		{
-			case MEMBER_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member())));
+		case MEMBER_WINDOW:
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member(DataManager::GetInternalID(true)))));
 				break;
 			case GROUP_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group())));
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group(DataManager::GetInternalID(true)))));
 				break;
 			case TEMPLATE_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template())));
+				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template(DataManager::GetInternalID(true)))));
 				break;
 			case LANDING: 
 				activeNuklearWindows_.push_back(new NuklearWindow(windowType, nullptr));

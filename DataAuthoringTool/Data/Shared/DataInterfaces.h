@@ -37,6 +37,7 @@ class IExport
 class PrimaryData : ISave, ILoad, IExport, IDelete
 {
 public:
+	PrimaryData(const int internalID) : internalID_(internalID){};
 	virtual int Save() override = 0;
 	virtual int Load() override = 0;
 	virtual int Delete() override = 0;
@@ -47,9 +48,11 @@ public:
 	int* GetNameBufferCurrentLength() { return &nameBufferCurrentLength_; }
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength; }
 	static int GetBufferMax() { return bufferMax_; }
+	int GetInternalID() const { return internalID_; }
 
 protected:
 	constexpr static int bufferMax_ = 32;
+	int internalID_ = -1;
 
 	char nameBuffer_[bufferMax_] = {};
 	int nameBufferCurrentLength_ = 0;

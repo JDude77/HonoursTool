@@ -20,6 +20,8 @@ class Template;
 class Group : public PrimaryData, public IValidate
 {
 public:
+	Group() : PrimaryData(-1){}
+	Group(const int internalID) : PrimaryData(internalID){}
 	int Save() override;
 	int Load() override;
 	int Validate() override;

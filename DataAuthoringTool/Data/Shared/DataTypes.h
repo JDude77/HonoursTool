@@ -24,6 +24,6 @@ static struct DataType
 		"Boolean (true/false tickbox)"
 	};
 
-	static constexpr int typeLabelsCount = 6;
+	static constexpr int typeLabelsCount_ = 6;
 };
 #endif

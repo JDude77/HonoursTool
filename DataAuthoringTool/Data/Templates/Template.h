@@ -16,14 +16,15 @@ using std::vector;
 class Template : public PrimaryData
 {
 public:
-	Template() = default;
+	Template(): PrimaryData(-1){}
+	Template(const int internalID): PrimaryData(internalID){}
 	int Save() override{return 1;}
 	int Load() override{return 1;};
 	int Export() override{return 1;};
 	int Delete() override{return 1;};
 
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
-	TemplateField GetFieldAtIndex(int index);
+	TemplateField* GetFieldAtIndex(int index);
 	int AddNewField();
 	
 private:
