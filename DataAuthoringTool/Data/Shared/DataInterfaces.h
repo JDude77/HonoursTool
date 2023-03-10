@@ -37,7 +37,7 @@ class IExport
 class PrimaryData : ISave, ILoad, IExport, IDelete
 {
 public:
-	PrimaryData(const int internalID) : internalID_(internalID){};
+	PrimaryData(const int internalID) : internalID_(internalID){}
 	virtual int Save() override = 0;
 	virtual int Load() override = 0;
 	virtual int Delete() override = 0;
@@ -46,9 +46,25 @@ public:
 	char* GetNameBuffer() { return nameBuffer_; }
 	char* GetIDBuffer() { return idBuffer_; }
 	int* GetNameBufferCurrentLength() { return &nameBufferCurrentLength_; }
-	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength; }
-	static int GetBufferMax() { return bufferMax_; }
+	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
+	const static int GetBufferMax() { return bufferMax_; }
 	int GetInternalID() const { return internalID_; }
+
+	void UpdateNameBuffer()
+	{
+		for (int i = nameBufferCurrentLength_ ; i < bufferMax_; i++)
+		{
+			nameBuffer_[i] = '\0';
+		}//End for
+	}//End UpdateNameBuffer
+
+	void UpdateIDBuffer()
+	{
+		for (int i = idBufferCurrentLength_ ; i < bufferMax_; i++)
+		{
+			idBuffer_[i] = '\0';
+		}//End for
+	}//End UpdateIDBuffer
 
 protected:
 	constexpr static int bufferMax_ = 32;
@@ -57,7 +73,7 @@ protected:
 	char nameBuffer_[bufferMax_] = {};
 	int nameBufferCurrentLength_ = 0;
 	char idBuffer_[bufferMax_] = {};
-	int idBufferCurrentLength = 0;
+	int idBufferCurrentLength_ = 0;
 	string name_;
 	string id_;
 };

@@ -27,12 +27,14 @@ class DataManager
 	//String: Group's ID
 	map<string, Group> groups_;
 	int numberOfGroups_ = 0;
-	inline static int internalIDCounter_ = 0;
+	inline static int internalIDCounter_ = -1;
 
 	[[nodiscard]] int GetNumberOfTemplates() const { return numberOfTemplates_; }
 	[[nodiscard]] int GetNumberOfMembers() const { return numberOfMembers_; }
 	[[nodiscard]] int GetNumberOfGroups() const { return numberOfGroups_; }
 public:
+	DataManager();
+
 	vector<Member> GetAllMembers();
 	vector<Template> GetAllTemplates();
 	vector<Group> GetAllGroups();
@@ -41,17 +43,10 @@ public:
 	void AddInstanceToDataMap(Template instance);
 	void AddInstanceToDataMap(Group instance);
 
-	void UpdateMember(Member* member);
-	void UpdateTemplate(Template* temp);
-	void UpdateGroup(Group* group);
+	void UpdateInstance(Member* instance);
+	void UpdateInstance(Template* instance);
+	void UpdateInstance(Group* instance);
 
 	static int GetInternalID(bool incrementAfter);
-
-	//To support user-defined IDs
-	//void UpdateInstanceIDInMap(Member instance);
-	//void UpdateInstanceIDInMap(Template instance);
-	//void UpdateInstanceIDInMap(Group instance);
-
-	//void RemoveInstanceFromMapAndDelete(Instance instance);
 };
 #endif

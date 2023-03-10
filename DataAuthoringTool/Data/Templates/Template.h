@@ -17,6 +17,7 @@ class Template : public PrimaryData
 {
 public:
 	Template(): PrimaryData(-1){}
+	Template(const char* ID, const int internalID);
 	Template(const int internalID): PrimaryData(internalID){}
 	int Save() override{return 1;}
 	int Load() override{return 1;};
@@ -25,6 +26,7 @@ public:
 
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
 	TemplateField* GetFieldAtIndex(int index);
+	[[nodiscard]] const vector<TemplateField> GetFields() const { return fields_; }
 	int AddNewField();
 	
 private:

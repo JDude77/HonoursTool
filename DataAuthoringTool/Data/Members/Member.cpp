@@ -1,5 +1,7 @@
 #include "Member.h"
 
+#include "../Templates/Template.h"
+
 int Member::Save()
 {
 	//TODO: Member save functionality
@@ -34,3 +36,15 @@ MemberField* Member::GetFieldAtIndex(const int index)
 {
 	return &fields_[index];
 }//End GetFieldAtIndex
+
+void Member::SetType(const shared_ptr<Template>& temp)
+{
+	type_ = temp;
+
+	if(!fields_.empty()) fields_.clear();
+
+	for(const auto fields = type_->GetFields(); TemplateField field : fields)
+	{
+		fields_.emplace_back(this, *field.GetDataType());
+	}//End for
+}//End SetType

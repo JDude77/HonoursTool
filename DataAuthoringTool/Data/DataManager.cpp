@@ -2,7 +2,11 @@
 
 #include <ranges>
 
-using std::reinterpret_pointer_cast;
+DataManager::DataManager()
+{
+	//Push default empty template as "none" value for member selection
+	AddInstanceToDataMap(Template("None", GetInternalID(true)));
+}//End constructor
 
 vector<Member> DataManager::GetAllMembers()
 {
@@ -43,7 +47,7 @@ void DataManager::AddInstanceToDataMap(Member instance)
 	id.append(instance.GetIDBuffer());
 	members_.insert({id, instance});
 	++numberOfMembers_;
-}//End AddInstanceToDataMap
+}//End AddInstanceToDataMap (Member)
 
 void DataManager::AddInstanceToDataMap(Template instance)
 {
@@ -51,7 +55,7 @@ void DataManager::AddInstanceToDataMap(Template instance)
 	id.append(instance.GetIDBuffer());
 	templates_.insert({id, instance});
 	++numberOfTemplates_;
-}//End AddInstanceToDataMap
+}//End AddInstanceToDataMap (Template)
 
 void DataManager::AddInstanceToDataMap(Group instance)
 {
@@ -59,47 +63,67 @@ void DataManager::AddInstanceToDataMap(Group instance)
 	id.append(instance.GetIDBuffer());
 	groups_.insert({id, instance});
 	++numberOfGroups_;
-}//End AddInstanceToDataMap
+}//End AddInstanceToDataMap (Group)
 
-void DataManager::UpdateMember(Member* member)
+void DataManager::UpdateInstance(Member* instance)
 {
-	if(members_.contains(member->GetIDBuffer()))
+	if(members_.contains(instance->GetIDBuffer()))
 	{
-		members_[member->GetIDBuffer()] = *member;
+		members_[instance->GetIDBuffer()] = *instance;
 	}//End if
 	else
 	{
 		for (auto i = members_.begin(); i != members_.end(); ++i)
 		{
-			if(i->second.GetInternalID() == member->GetInternalID())
+			if(i->second.GetInternalID() == instance->GetInternalID())
 			{
 				members_.erase(i);
 				break;
 			}//End if
 		}//End for
-		members_.insert({member->GetIDBuffer(), *member});
+		members_.insert({instance->GetIDBuffer(), *instance});
 	}//End else
-}//End Update Member
+}//End UpdateInstance (Member)
 
-void DataManager::UpdateGroup(Group* group)
+void DataManager::UpdateInstance(Template* instance)
 {
-	if(groups_.contains(group->GetIDBuffer()))
+	if(templates_.contains(instance->GetIDBuffer()))
 	{
-		groups_[group->GetIDBuffer()] = *group;
+		templates_[instance->GetIDBuffer()] = *instance;
+	}//End if
+	else
+	{
+		for (auto i = templates_.begin(); i != templates_.end(); ++i)
+		{
+			if(i->second.GetInternalID() == instance->GetInternalID())
+			{
+				templates_.erase(i);
+				break;
+			}//End if
+		}//End for
+		templates_.insert({instance->GetIDBuffer(), *instance});
+	}//End else
+}//End UpdateInstance (Template)
+
+void DataManager::UpdateInstance(Group* instance)
+{
+	if(groups_.contains(instance->GetIDBuffer()))
+	{
+		groups_[instance->GetIDBuffer()] = *instance;
 	}//End if
 	else
 	{
 		for (auto i = groups_.begin(); i != groups_.end(); ++i)
 		{
-			if(i->second.GetInternalID() == group->GetInternalID())
+			if(i->second.GetInternalID() == instance->GetInternalID())
 			{
 				groups_.erase(i);
 				break;
 			}//End if
 		}//End for
-		groups_.insert({group->GetIDBuffer(), *group});
+		groups_.insert({instance->GetIDBuffer(), *instance});
 	}//End else
-}//End Update Group
+}//End UpdateInstance (Group)
 
 int DataManager::GetInternalID(const bool incrementAfter)
 {
@@ -109,23 +133,3 @@ int DataManager::GetInternalID(const bool incrementAfter)
 	++internalIDCounter_;
 	return temp;
 }//End GetInternalID
-
-void DataManager::UpdateTemplate(Template* temp)
-{
-	if(templates_.contains(temp->GetIDBuffer()))
-	{
-		templates_[temp->GetIDBuffer()] = *temp;
-	}//End if
-	else
-	{
-		for (auto i = templates_.begin(); i != templates_.end(); ++i)
-		{
-			if(i->second.GetInternalID() == temp->GetInternalID())
-			{
-				templates_.erase(i);
-				break;
-			}//End if
-		}//End for
-		templates_.insert({temp->GetIDBuffer(), *temp});
-	}//End else
-}//End Update Template

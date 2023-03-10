@@ -31,6 +31,8 @@ public:
 	int GetTemplateIndex() { return templateIndex_; }
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
 	[[nodiscard]] MemberField* GetFieldAtIndex(int index);
+	void SetTemplateIndex(const int index) { templateIndex_ = index; }
+	void SetType(const shared_ptr<Template>& temp);
 
 private:
 	int templateIndex_ = 0;

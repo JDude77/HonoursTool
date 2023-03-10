@@ -32,14 +32,19 @@ private:
 		//TODO: Refactor this to not happen every frame of rendering a member window - only on templates updating
 		cachedTemplates_ = make_shared<vector<Template>>(dataManager_->GetAllTemplates());
 
-		vector<char*> templateNames;
+		int cachedTemplateIndex = memberData->GetTemplateIndex();
+
+		vector<const char*> templateNames;
 		for (auto& temp : *cachedTemplates_)
 		{
 			templateNames.push_back(temp.GetNameBuffer());
 		}//End for
 		
 		//Render templates dropdown
-		nk_combo(nuklearContext, const_cast<const char**>(templateNames.data()), NK_LEN(templateNames), memberData->GetTemplateIndex(), 24, nk_vec2(300, 300));
+		memberData->SetTemplateIndex(nk_combo(nuklearContext, templateNames.data(), templateNames.size(), memberData->GetTemplateIndex(), 24, nk_vec2(300, 300)));
+
+		//Set template depending on index
+		if(cachedTemplateIndex != memberData->GetTemplateIndex()) memberData->SetType(make_shared<Template>(cachedTemplates_->at(memberData->GetTemplateIndex())));
 	}//End RenderTemplateHeaderDropdown
 
 	bool RenderWindowHeader(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
@@ -48,10 +53,12 @@ private:
 			//Name
 			nk_label(nuklearContext, "Name: ", NK_TEXT_LEFT);
 			nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, windowData->GetNameBuffer(), windowData->GetNameBufferCurrentLength(), windowData->GetBufferMax(), nk_filter_default);
+			windowData->UpdateNameBuffer();
+
 			//ID
 			nk_label(nuklearContext, "ID: ", NK_TEXT_LEFT);
 			nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, windowData->GetIDBuffer(), windowData->GetIDBufferCurrentLength(), windowData->GetBufferMax(), nk_filter_default);
-
+			windowData->UpdateIDBuffer();
 		//If the data we're handling is a member
 		if(const auto memberData = dynamic_pointer_cast<Member>(windowData))
 		{
@@ -160,7 +167,7 @@ private:
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
 			}//End for
-			if(nk_button_label(nuklearContext, "Debug: Update Member In Data Manager")) dataManager_->UpdateMember(memberData.get());
+			if(nk_button_label(nuklearContext, "Debug: Update Member In Data Manager")) dataManager_->UpdateInstance(memberData.get());
 		}//End else if
 		#pragma endregion
 
@@ -169,7 +176,7 @@ private:
 		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
 			//Future me problem
-			if(nk_button_label(nuklearContext, "Debug: Update Group In Data Manager")) dataManager_->UpdateGroup(groupData.get());
+			if(nk_button_label(nuklearContext, "Debug: Update Group In Data Manager")) dataManager_->UpdateInstance(groupData.get());
 		}//End else if
 		#pragma endregion
 
@@ -204,7 +211,7 @@ private:
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
 				if(nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
 				
-			dataManager_->UpdateTemplate(templateData.get());
+			dataManager_->UpdateInstance(templateData.get());
 		}//End else if
 		#pragma endregion
 
