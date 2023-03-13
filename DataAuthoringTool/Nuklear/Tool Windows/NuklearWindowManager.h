@@ -123,10 +123,6 @@ private:
 					//Input field for data
 					switch(field->GetDataType())
 					{
-						case DataType::NONE:
-							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
-							break;
-
 						case DataType::STRING:
 							//TODO: Add functionality for applying length limit validation rule to max length
 							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_default);
@@ -141,14 +137,15 @@ private:
 							break;
 
 						case DataType::CHAR:
-							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), 1, nk_filter_default);
+							nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), 2, nk_filter_default);
 							break;
 
 						case DataType::BOOLEAN:
-							nk_checkbox_label(nuklearContext, "", reinterpret_cast<nk_bool*>(field->GetBooleanData()));
+							{const char* label = *field->GetBooleanData() ? "TRUE" : "FALSE";
+							nk_checkbox_label(nuklearContext, label, reinterpret_cast<nk_bool*>(field->GetBooleanData()));}
 							break;
 
-						default: 
+						case DataType::NONE:
 							nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
 					}//End switch
 

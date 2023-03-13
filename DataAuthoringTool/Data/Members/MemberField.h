@@ -14,23 +14,25 @@ using std::shared_ptr;
 class MemberField : public IDelete, public IValidate
 {
 public:
-	MemberField(Member* parentMember, DataType::DATA_TYPE dataType);
+	MemberField(Member* parentMember, DataType::DATA_TYPE dataType, int fieldIndex);
 	int Validate() override;
 	int Delete() override;
 
-	const char* GetNameAndTypeLabel();
-	const char* GetName();
-	const char* GetTypeLabel();
-	DataType::DATA_TYPE GetDataType() { return dataType_; }
+	[[nodiscard]] const char* GetNameAndTypeLabel() const;
+	[[nodiscard]] const char* GetName() const;
+	[[nodiscard]] const char* GetTypeLabel() const;
+	DataType::DATA_TYPE GetDataType() const { return dataType_; }
 
-	char* GetDataBuffer(){ return field_->dataBuffer_; }
-	int* GetDataBufferCurrentSize(){ return &field_->dataBufferCurrentSize_; }
-	const int* GetDataBufferMaxSize(){ return &field_->maxDataBufferSize_; }
-	bool* GetBooleanData(){ return &field_->booleanData; }
+	[[nodiscard]] char* GetDataBuffer() const { return field_->dataBuffer_; }
+	[[nodiscard]] int* GetDataBufferCurrentSize() const { return &field_->dataBufferCurrentSize_; }
+	[[nodiscard]] const int* GetDataBufferMaxSize() const { return &field_->maxDataBufferSize_; }
+	[[nodiscard]] bool* GetBooleanData() const { return &field_->booleanData; }
 
 private:
-	DataType::DATA_TYPE dataType_;
 	shared_ptr<Field> field_ = nullptr;
+	string fieldName_;
+	int fieldIndex_;
+	DataType::DATA_TYPE dataType_;
 	Member* parentMember_ = nullptr;
 	string parentMemberID_;
 };

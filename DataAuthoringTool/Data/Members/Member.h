@@ -28,9 +28,10 @@ public:
 	int Validate() override;
 
 	shared_ptr<Template> GetType() { return type_; }
-	int GetTemplateIndex() { return templateIndex_; }
+	int GetTemplateIndex() const { return templateIndex_; }
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
 	[[nodiscard]] MemberField* GetFieldAtIndex(int index);
+	void UpdateTemplateIndex(const shared_ptr<vector<Template>>& templates);
 	void SetTemplateIndex(const int index) { templateIndex_ = index; }
 	void SetType(const shared_ptr<Template>& temp);
 
