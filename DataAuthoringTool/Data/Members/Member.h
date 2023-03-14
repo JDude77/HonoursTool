@@ -23,7 +23,7 @@ public:
 	Member(const int internalID): PrimaryData(internalID){}
 	int Save() override;
 	int Load() override;
-	int Export() override;
+	int Export(PrimaryData* caller = nullptr) override;
 	int Delete() override;
 	int Validate() override;
 

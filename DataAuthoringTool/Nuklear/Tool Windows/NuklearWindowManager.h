@@ -87,7 +87,7 @@ private:
 		nk_layout_row_dynamic(nuklearContext, 24, 1);
 			if(nk_button_label(nuklearContext, "SAVE")) windowData->Save();
 			if(nk_button_label(nuklearContext, "LOAD")) windowData->Load();
-			if(nk_button_label(nuklearContext, "EXPORT")) windowData->Export();
+			if(nk_button_label(nuklearContext, "EXPORT")) windowData->Export(windowData.get());
 			if(nk_button_label(nuklearContext, "DELETE")) windowData->Delete();
 
 		return true;

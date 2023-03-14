@@ -30,8 +30,12 @@ int Group::Delete()
 	return 1;
 }//End Delete
 
-int Group::Export()
+int Group::Export(PrimaryData* caller)
 {
 	//TODO: Group Export functionality
+	for(auto& member : members_)
+	{
+		member.second->Export(this);
+	}//End for
 	return 1;
 }//End Export

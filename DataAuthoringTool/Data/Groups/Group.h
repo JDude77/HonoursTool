@@ -26,7 +26,7 @@ public:
 	int Load() override;
 	int Validate() override;
 	int Delete() override;
-	int Export() override;
+	int Export(PrimaryData* caller = nullptr) override;
 
 private:
 	//String: Member ID, Shared Pointer: Member pointer to be re-retrieved using the ID if memory location changes

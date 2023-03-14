@@ -2,6 +2,7 @@
 #ifndef DATA_INTERFACES
 #define DATA_INTERFACES
 #include <string>
+class PrimaryData;
 using std::string;
 
 class ISave
@@ -31,7 +32,8 @@ class IDelete
 class IExport
 {
 	public:
-	virtual int Export() = 0;
+	//Caller pointer determines whether the JSON should be part of a larger JSON file (has caller) or an individual one (null pointer)
+	virtual int Export(PrimaryData* caller = nullptr) = 0;
 };
 
 class PrimaryData : ISave, ILoad, IExport, IDelete
@@ -41,7 +43,7 @@ public:
 	virtual int Save() override = 0;
 	virtual int Load() override = 0;
 	virtual int Delete() override = 0;
-	virtual int Export() override = 0;
+	virtual int Export(PrimaryData* caller = nullptr) override = 0;
 
 	char* GetNameBuffer() { return nameBuffer_; }
 	char* GetIDBuffer() { return idBuffer_; }

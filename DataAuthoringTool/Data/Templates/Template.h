@@ -19,10 +19,10 @@ public:
 	Template(): PrimaryData(-1){}
 	Template(const char* ID, const int internalID);
 	Template(const int internalID): PrimaryData(internalID){}
-	int Save() override{return 1;}
-	int Load() override{return 1;};
-	int Export() override{return 1;};
-	int Delete() override{return 1;};
+	int Save() override;
+	int Load() override;
+	int Export(PrimaryData* caller = nullptr) override;
+	int Delete() override;
 
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
 	TemplateField* GetFieldAtIndex(int index);
