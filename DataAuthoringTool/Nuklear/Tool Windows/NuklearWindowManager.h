@@ -164,7 +164,6 @@ private:
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
 			}//End for
-			if(nk_button_label(nuklearContext, "Debug: Update Member In Data Manager")) dataManager_->UpdateInstance(memberData.get());
 		}//End else if
 		#pragma endregion
 
@@ -195,8 +194,7 @@ private:
 					//Field Name
 					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetIDBuffer(), field->GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
 					//Field Type
-					field->SetDataType(nk_combo(nuklearContext, DataType::typeLabels_, NK_LEN(DataType::typeLabels_), *field->GetDataTypeAsInt(), 24, nk_vec2(300, 300)));
-					int temp = *field->GetDataTypeAsInt();
+					field->SetDataType(nk_combo(nuklearContext, DataType::typeLabels_, std::size(DataType::typeLabels_), *field->GetDataTypeAsInt(), 24, nk_vec2(300, 300)));
 					//TODO: Implement validation rules multi-select combo box
 					//Blank label temporary to preserve spacing
 					nk_label(nuklearContext, "", NK_LEFT);
