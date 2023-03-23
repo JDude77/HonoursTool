@@ -853,7 +853,7 @@ extern "C" {
 	/*/// #### nk_input_scroll
 	/// Copies the last mouse scroll value to nuklear. Is generally
 	/// a scroll value. So does not have to come from mouse and could also originate
-	/// TODO finish this sentence
+	/// 
 	///
 	/// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
 	/// void nk_input_scroll(struct nk_context *ctx, struct nk_vec2 val);
@@ -11413,7 +11413,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*         render glyphs to one-channel bitmaps with antialiasing (box filter) */
 /*         render glyphs to one-channel SDF bitmaps (signed-distance field/function) */
 /*  */
-/*    Todo: */
+/*   */
 /*         non-MS cmaps */
 /*         crashproof on bad data */
 /*         hinting? (no longer patented) */

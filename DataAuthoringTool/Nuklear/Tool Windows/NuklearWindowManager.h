@@ -195,9 +195,27 @@ private:
 					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetIDBuffer(), field->GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
 					//Field Type
 					field->SetDataType(nk_combo(nuklearContext, DataType::typeLabels_, std::size(DataType::typeLabels_), *field->GetDataTypeAsInt(), 24, nk_vec2(300, 300)));
-					//TODO: Implement validation rules multi-select combo box
-					//Blank label temporary to preserve spacing
-					nk_label(nuklearContext, "", NK_LEFT);
+					//Validation rules multi-select combo box
+					//Boolean type and none type have no validation rules
+					if(*field->GetDataType() != DataType::NONE && *field->GetDataType() != DataType::BOOLEAN)
+					{
+						if(nk_combo_begin_label(nuklearContext, "Click To Choose Validation Rules", nk_vec2(500, 300)))
+						{
+							auto labels = ValidationRule::GetValidationRuleLabels(*field->GetDataType());
+							nk_layout_row_dynamic(nuklearContext, 24, 1);
+							for (int j = 0; j < labels.size(); j++)
+							{
+								nk_selectable_label(nuklearContext, labels[j].c_str(), NK_TEXT_LEFT, &field->GetValidationRules()->at(j).second);
+							}//End for
+							nk_combo_end(nuklearContext);
+						}//End if
+					}//End if
+					else
+					{
+						//Blank label to preserve spacing
+						nk_label(nuklearContext, "", NK_LEFT);
+					}//End else
+					
 					//Delete Field Button
 					if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
 			}//End for

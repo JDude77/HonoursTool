@@ -17,6 +17,7 @@ using std::function;
 //Enum representing each individual possible rule
 enum RULES
 {
+	NA,
 	ALL_PRESENCE,
 	STRING_MAX_LENGTH,
 	STRING_MIN_LENGTH,
@@ -35,13 +36,11 @@ enum RULES
 //It feels cursed. Very cursed.
 struct ValidationFunction
 {
-	ValidationFunction() = default;
-
 	template<typename F>
-	explicit ValidationFunction(F&& fun) : ValidationFunction(function(std::forward<F>(fun))) {}
+	ValidationFunction(F&& fun) : ValidationFunction(function(std::forward<F>(fun))) {}
 
 	template<typename ... Args>
-	explicit ValidationFunction(function<bool(Args...)> fun) : any_(fun) {}
+	ValidationFunction(function<bool(Args...)> fun) : any_(fun) {}
 
 	template<typename ... Args>
 	bool operator()(Args&& ... args)
@@ -49,13 +48,6 @@ struct ValidationFunction
 		return std::invoke(std::any_cast<function<bool(Args...)>>(any_), std::forward<Args>(args)...);
 	}//End () operator
 
-private:
-	std::any any_;
-};
-
-class ValidationRule
-{
-	//TODO: Refactor this. For the love of god, refactor ALL of this.
 	static bool Presence(const string& dataBuffer)
 	{
 		return !dataBuffer.empty();
@@ -133,8 +125,26 @@ class ValidationRule
 		return false;
 	}
 
-	const map<DataType::DATA_TYPE, vector<RULES>> rulesPerType_
+private:
+	std::any any_;
+};
+
+class ValidationRule
+{
+	inline static const map<const DataType::DATA_TYPE, const vector<RULES>> rulesPerType_
 	{
+		//None (empty)
+		{
+			DataType::NONE,
+			vector{ NA }//End None Rules
+		},//End None Entry
+
+		//Boolean (empty)
+		{
+			DataType::BOOLEAN,
+			vector{ NA }//End Boolean Rules
+		},//End Boolean Entry
+
 		//String
 		{
 			DataType::STRING,
@@ -188,25 +198,100 @@ class ValidationRule
 		},//End Char Entry
 	};//End Map Initialization
 
-	const map<RULES, ValidationFunction> validationRuleFunctions_
+	inline static const map<const RULES, ValidationFunction> validationRuleFunctions_
 	{
-		{ALL_PRESENCE,					ValidationFunction(&Presence)},
-		{STRING_MAX_LENGTH,				ValidationFunction(&StringMaxLength)},
-		{STRING_MIN_LENGTH,				ValidationFunction(&StringMinLength)},
-		{STRING_STARTS_WITH_SUBSTRING,	ValidationFunction(&StringStartsWithSubstring)},
-		{STRING_ENDS_WITH_SUBSTRING,		ValidationFunction(&StringEndsWithSubstring)},
-		{NUMBER_IS_NOT_NEGATIVE,			ValidationFunction(&NumberIsNotNegative)},
-		{NUMBER_IS_NEGATIVE,				ValidationFunction(&NumberIsNegative)},
-		{NUMBER_IS_NOT_ZERO,				ValidationFunction(&NumberIsNotZero)},
-		{NUMBER_IS_GREATER_THAN,			ValidationFunction(&NumberIsGreaterThan)},
-		{NUMBER_IS_LESS_THAN,				ValidationFunction(&NumberIsLessThan)},
-		{INTEGER_DIVISIBLE_BY_INTEGER,	ValidationFunction(&IntegerDivisibleByInteger)},
-		{CHAR_IS_ONE_OF_CHARACTER_SET,	ValidationFunction(&CharIsOneOfCharacterSet)},
+		{ALL_PRESENCE,					ValidationFunction(function(&ValidationFunction::Presence))},
+		{STRING_MAX_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMaxLength))},
+		{STRING_STARTS_WITH_SUBSTRING,	ValidationFunction(function(&ValidationFunction::StringStartsWithSubstring))},
+		{STRING_MIN_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMinLength))},
+		{STRING_ENDS_WITH_SUBSTRING,		ValidationFunction(function(&ValidationFunction::StringEndsWithSubstring))},
+		{NUMBER_IS_NOT_NEGATIVE,			ValidationFunction(function(&ValidationFunction::NumberIsNotNegative))},
+		{NUMBER_IS_NEGATIVE,				ValidationFunction(function(&ValidationFunction::NumberIsNegative))},
+		{NUMBER_IS_NOT_ZERO,				ValidationFunction(function(&ValidationFunction::NumberIsNotZero))},
+		{NUMBER_IS_GREATER_THAN,			ValidationFunction(function(&ValidationFunction::NumberIsGreaterThan))},
+		{NUMBER_IS_LESS_THAN,				ValidationFunction(function(&ValidationFunction::NumberIsLessThan))},
+		{INTEGER_DIVISIBLE_BY_INTEGER,	ValidationFunction(function(&ValidationFunction::IntegerDivisibleByInteger))},
+		{CHAR_IS_ONE_OF_CHARACTER_SET,	ValidationFunction(function(&ValidationFunction::CharIsOneOfCharacterSet))},
 	};
 
-	//Need a map to serve as a dictionary like so:
-	//DataType : List of validation rules that can be used for that type
-	//Unsure whether to have list of enums which can be fed to something to invoke a function or just store the functions themselves
+	inline static const map<const RULES, const string> validationRuleLabels_
+	{
+		{ALL_PRESENCE,					"Must not be left blank/empty"},
+		{STRING_MAX_LENGTH,				"Text must not be longer than maximum length"},
+		{STRING_MIN_LENGTH,				"Text must not be shorter than minimum length"},
+		{STRING_STARTS_WITH_SUBSTRING,	"Text must start with specific text"},
+		{STRING_ENDS_WITH_SUBSTRING,		"Text must end with specific text"},
+		{NUMBER_IS_NOT_NEGATIVE,			"Number must not be negative"},
+		{NUMBER_IS_NOT_ZERO,				"Number must not be zero"},
+		{NUMBER_IS_NEGATIVE,				"Number must be negative"},
+		{NUMBER_IS_GREATER_THAN,			"Number must be greater than specific number"},
+		{NUMBER_IS_LESS_THAN,				"Number must be less than specific number"},
+		{INTEGER_DIVISIBLE_BY_INTEGER,	"Whole number must be divisible by other whole number"},
+		{CHAR_IS_ONE_OF_CHARACTER_SET,	"Character must be one of a set of characters"},
+	};
+
+
+public:
+	static const string& GetValidationRuleLabel(const RULES& rule)
+	{
+		return validationRuleLabels_.at(rule);
+	}//End GetValidationRuleLabelsOfType
+
+	static const vector<string> GetValidationRuleLabels(const DataType::DATA_TYPE type)
+	{
+		switch(type)
+		{
+			case DataType::NONE: case DataType::BOOLEAN: return {};
+
+			case DataType::STRING:
+				return vector
+				{
+					validationRuleLabels_.at(ALL_PRESENCE),
+					validationRuleLabels_.at(STRING_MAX_LENGTH),
+					validationRuleLabels_.at(STRING_MIN_LENGTH),
+					validationRuleLabels_.at(STRING_STARTS_WITH_SUBSTRING),
+					validationRuleLabels_.at(STRING_ENDS_WITH_SUBSTRING)
+				};
+			case DataType::INTEGER:
+				return vector
+				{
+					validationRuleLabels_.at(ALL_PRESENCE),
+					validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
+					validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
+					validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
+					validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
+					validationRuleLabels_.at(NUMBER_IS_GREATER_THAN),
+					validationRuleLabels_.at(INTEGER_DIVISIBLE_BY_INTEGER)
+				};
+			case DataType::FLOAT: 
+				return vector
+				{
+					validationRuleLabels_.at(ALL_PRESENCE),
+					validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
+					validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
+					validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
+					validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
+					validationRuleLabels_.at(NUMBER_IS_GREATER_THAN)
+				};
+			case DataType::CHAR:
+				return vector
+				{
+					validationRuleLabels_.at(ALL_PRESENCE),
+					validationRuleLabels_.at(CHAR_IS_ONE_OF_CHARACTER_SET)
+				};
+		}//End switch
+		return {};
+	} //End GetValidationRuleLabels
+
+	static const vector<RULES>& GetValidationRuleLabelsOfType(const int type)
+	{
+		return rulesPerType_.at(static_cast<DataType::DATA_TYPE>(type));
+	}//End GetValidationRuleLabelsOfType
+
+	static const vector<RULES>& GetValidationRuleLabelsOfType(const DataType::DATA_TYPE type)
+	{
+		return rulesPerType_.at(type);
+	}//End GetValidationRuleLabelsOfType
 };
 
 
