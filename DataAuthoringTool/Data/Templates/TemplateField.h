@@ -28,6 +28,7 @@ public:
 	DataType::DATA_TYPE* GetDataType() { return &dataType_; }
 	int* GetDataTypeAsInt() { return &typeInt_; }
 	vector<std::pair<RULES, int>>* GetValidationRules(){ return &validationRules_; }
+	ValidationRuleParameter* GetValidationRuleParameters(){ return &validationRuleParameters_; }
 
 private:
 	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name
@@ -40,5 +41,6 @@ private:
 	DataType::DATA_TYPE dataType_ = DataType::NONE;
 	int typeInt_ = DataType::NONE;
 	vector<std::pair<RULES, int>> validationRules_;
+	ValidationRuleParameter validationRuleParameters_;
 };
 #endif
