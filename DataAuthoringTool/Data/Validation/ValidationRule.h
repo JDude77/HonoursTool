@@ -230,6 +230,41 @@ class ValidationRule
 		{CHAR_IS_ONE_OF_CHARACTER_SET,	"Character must be one of a set of characters"},
 	};
 
+	inline static const vector<string> stringRuleLabels_
+	{
+		validationRuleLabels_.at(ALL_PRESENCE),
+		validationRuleLabels_.at(STRING_MAX_LENGTH),
+		validationRuleLabels_.at(STRING_MIN_LENGTH),
+		validationRuleLabels_.at(STRING_STARTS_WITH_SUBSTRING),
+		validationRuleLabels_.at(STRING_ENDS_WITH_SUBSTRING)
+	};
+
+	inline static const vector<string> integerRuleLabels_
+	{
+		validationRuleLabels_.at(ALL_PRESENCE),
+		validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
+		validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
+		validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
+		validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
+		validationRuleLabels_.at(NUMBER_IS_GREATER_THAN),
+		validationRuleLabels_.at(INTEGER_DIVISIBLE_BY_INTEGER)
+	};
+
+	inline static const vector<string> floatRuleLabels_
+	{
+		validationRuleLabels_.at(ALL_PRESENCE),
+		validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
+		validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
+		validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
+		validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
+		validationRuleLabels_.at(NUMBER_IS_GREATER_THAN)
+	};
+
+	inline static const vector<string> charRuleLabels_
+	{
+		validationRuleLabels_.at(ALL_PRESENCE),
+		validationRuleLabels_.at(CHAR_IS_ONE_OF_CHARACTER_SET)
+	};
 
 public:
 	static const string& GetValidationRuleLabel(const RULES& rule)
@@ -237,48 +272,15 @@ public:
 		return validationRuleLabels_.at(rule);
 	}//End GetValidationRuleLabelsOfType
 
-	static const vector<string> GetValidationRuleLabels(const DataType::DATA_TYPE type)
+	static const vector<string>& GetValidationRuleLabels(const DataType::DATA_TYPE type)
 	{
 		switch(type)
 		{
 			case DataType::NONE: case DataType::BOOLEAN: return {};
-
-			case DataType::STRING:
-				return vector
-				{
-					validationRuleLabels_.at(ALL_PRESENCE),
-					validationRuleLabels_.at(STRING_MAX_LENGTH),
-					validationRuleLabels_.at(STRING_MIN_LENGTH),
-					validationRuleLabels_.at(STRING_STARTS_WITH_SUBSTRING),
-					validationRuleLabels_.at(STRING_ENDS_WITH_SUBSTRING)
-				};
-			case DataType::INTEGER:
-				return vector
-				{
-					validationRuleLabels_.at(ALL_PRESENCE),
-					validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
-					validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
-					validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
-					validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
-					validationRuleLabels_.at(NUMBER_IS_GREATER_THAN),
-					validationRuleLabels_.at(INTEGER_DIVISIBLE_BY_INTEGER)
-				};
-			case DataType::FLOAT: 
-				return vector
-				{
-					validationRuleLabels_.at(ALL_PRESENCE),
-					validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
-					validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
-					validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
-					validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
-					validationRuleLabels_.at(NUMBER_IS_GREATER_THAN)
-				};
-			case DataType::CHAR:
-				return vector
-				{
-					validationRuleLabels_.at(ALL_PRESENCE),
-					validationRuleLabels_.at(CHAR_IS_ONE_OF_CHARACTER_SET)
-				};
+			case DataType::STRING:	return stringRuleLabels_;
+			case DataType::INTEGER:	return integerRuleLabels_;
+			case DataType::FLOAT:	return floatRuleLabels_;
+			case DataType::CHAR:	return charRuleLabels_;
 		}//End switch
 		return {};
 	} //End GetValidationRuleLabels
@@ -293,6 +295,4 @@ public:
 		return rulesPerType_.at(type);
 	}//End GetValidationRuleLabelsOfType
 };
-
-
 #endif

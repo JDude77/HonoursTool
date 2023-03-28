@@ -1,0 +1,8 @@
+#pragma once
+#ifndef VALIDATION_RULE_PARAMETER
+#define VALIDATION_RULE_PARAMETER
+
+
+
+
+#endif

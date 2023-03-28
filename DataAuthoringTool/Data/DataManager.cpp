@@ -27,6 +27,16 @@ vector<Template> DataManager::GetAllTemplates()
 		templates.push_back(temp);
 	}//End for
 
+	//Push the empty "NONE" template to the first slot
+	for (auto it = templates.begin(); it != templates.end(); ++it)
+	{
+		if(it->GetInternalID() == -1)
+		{
+			std::ranges::rotate(templates, it);
+			break;
+		}//End if
+	}//End for
+
 	return templates;
 }//End GetAllTemplates
 

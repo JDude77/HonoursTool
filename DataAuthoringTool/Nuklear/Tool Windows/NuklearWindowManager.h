@@ -93,6 +93,24 @@ private:
 		return true;
 	}//End RenderWindowFooter
 
+	void PreventNegativeAndNonNegativeRule(TemplateField* field, const int j)
+	{
+		if(field->GetValidationRules()->at(j).first == NUMBER_IS_NEGATIVE)
+		{
+			if(field->GetValidationRules()->at(j-1).second == 1 && field->GetValidationRules()->at(j).second == 1)
+			{
+				field->GetValidationRules()->at(j-1).second = 0;
+			}//End if
+		}//End if
+		if(field->GetValidationRules()->at(j).first == NUMBER_IS_NOT_NEGATIVE)
+		{
+			if(field->GetValidationRules()->at(j+1).second == 1 && field->GetValidationRules()->at(j).second == 1)
+			{
+				field->GetValidationRules()->at(j+1).second = 0;
+			}//End if
+		}//End if
+	}//End PreventNegativeAndNonNegativeRule
+
 	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
 	{
 		#pragma region Landing
@@ -206,6 +224,8 @@ private:
 							for (int j = 0; j < labels.size(); j++)
 							{
 								nk_selectable_label(nuklearContext, labels[j].c_str(), NK_TEXT_LEFT, &field->GetValidationRules()->at(j).second);
+
+								PreventNegativeAndNonNegativeRule(field, j);
 							}//End for
 							nk_combo_end(nuklearContext);
 						}//End if
@@ -215,7 +235,102 @@ private:
 						//Blank label to preserve spacing
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
-					
+
+					//Validation rule fill-out
+					for(int j = 0; j < field->GetValidationRules()->size(); j++)
+					{
+						if(field->GetValidationRules()->at(j).second != 0)
+						{
+							switch(field->GetValidationRules()->at(j).first)
+							{
+								case ALL_PRESENCE:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "The field is not allowed to be empty.", NK_LEFT);
+									}
+									break;
+								case STRING_MAX_LENGTH:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "Text must not contain more than ", NK_TEXT_LEFT);
+											//Input
+											nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
+									}
+									break;
+								case STRING_MIN_LENGTH:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "Text must not contain fewer than ", NK_TEXT_LEFT);
+											//Input
+											nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
+									}
+									break;
+								case STRING_STARTS_WITH_SUBSTRING:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 2);
+											nk_label(nuklearContext, "Text must begin with the following: ", NK_TEXT_LEFT);
+											//Input
+									}
+									break;
+								case STRING_ENDS_WITH_SUBSTRING:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 2);
+											nk_label(nuklearContext, "Text must end with the following: ", NK_TEXT_LEFT);
+											//Input
+									}
+									break;
+								case NUMBER_IS_NOT_NEGATIVE:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "The number must not be negative.", NK_TEXT_LEFT);
+									}
+									break;
+								case NUMBER_IS_NEGATIVE:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "The number must be negative.", NK_TEXT_LEFT);
+									}
+									break;
+								case NUMBER_IS_NOT_ZERO:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 1);
+											nk_label(nuklearContext, "The number must not be zero.", NK_TEXT_LEFT);
+									}
+									break;
+								case NUMBER_IS_LESS_THAN:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 2);
+											nk_label(nuklearContext, "The number must be less than ", NK_TEXT_LEFT);
+											//Input
+									}
+									break;
+								case NUMBER_IS_GREATER_THAN:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 2);
+											nk_label(nuklearContext, "The number must be greater than ", NK_TEXT_LEFT);
+											//Input
+									}
+									break;
+								case INTEGER_DIVISIBLE_BY_INTEGER:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 3);
+											nk_label(nuklearContext, "The integer must divide into the whole number ", NK_TEXT_LEFT);
+											//Input
+											nk_label(nuklearContext, " with no remainder.", NK_TEXT_LEFT);
+									}
+									break;
+								case CHAR_IS_ONE_OF_CHARACTER_SET:
+									{
+										nk_layout_row_dynamic(nuklearContext, 24, 2);
+											nk_label(nuklearContext, "The character must be one of the following characters: ", NK_TEXT_LEFT);
+											//Input
+									}
+									break;
+								case NA: default: ;
+							}//End switch
+						}//End if
+					}//End for
+
 					//Delete Field Button
 					if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
 			}//End for

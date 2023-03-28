@@ -5,6 +5,7 @@
 #include "../Shared/DataInterfaces.h"
 #include "../Shared/DataTypes.h"
 #include "../Validation/ValidationRule.h"
+#include "../Validation/ValidationRuleParameter.h"
 
 #include <string>
 using std::string;

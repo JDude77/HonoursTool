@@ -38,6 +38,7 @@
     <ClInclude Include="Data\Templates\Template.h" />
     <ClInclude Include="Data\Templates\TemplateField.h" />
     <ClInclude Include="Data\Validation\ValidationRule.h" />
+    <ClInclude Include="Data\Validation\ValidationRuleParameter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Data\DataManager.cpp" />
