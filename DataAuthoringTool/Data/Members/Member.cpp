@@ -100,7 +100,10 @@ int Member::Delete()
 
 int Member::Validate()
 {
-	//TODO: Member validate functionality
+	for (auto& field : fields_)
+	{
+		field.Validate();
+	}//End for
 	return 1;
 }//End Validate
 

@@ -93,7 +93,7 @@ private:
 		return true;
 	}//End RenderWindowFooter
 
-	void PreventNegativeAndNonNegativeRule(TemplateField* field, const int j)
+	static void PreventNegativeAndNonNegativeRule(TemplateField* field, const int j)
 	{
 		if(field->GetValidationRules()->at(j).first == NUMBER_IS_NEGATIVE)
 		{
@@ -110,6 +110,18 @@ private:
 			}//End if
 		}//End if
 	}//End PreventNegativeAndNonNegativeRule
+
+	static void ClearDeletedCharacters(char* idBuffer, const int idBufferCurrentLength)
+	{
+		if(strlen(idBuffer) > idBufferCurrentLength)
+		{
+			for (int j = idBufferCurrentLength; j < TemplateField::GetBufferMax(); j++)
+			{
+				if(idBuffer[j] == '\0') break;
+				idBuffer[j] = '\0';
+			}//End for
+		}//End if
+	}//End ClearDeletedCharacters
 
 	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
 	{
@@ -217,6 +229,9 @@ private:
 					TemplateField* field = templateData->GetFieldAtIndex(i);
 					//Field Name
 					nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetIDBuffer(), field->GetIDBufferCurrentLength(), TemplateField::GetBufferMax(), nk_filter_ascii);
+					//Clear deleted characters
+					ClearDeletedCharacters(field->GetIDBuffer(), *field->GetIDBufferCurrentLength());
+
 					//Field Type
 					field->SetDataType(nk_combo(nuklearContext, DataType::typeLabels_, std::size(DataType::typeLabels_), *field->GetDataTypeAsInt(), 24, nk_vec2(300, 300)));
 					//Validation rules multi-select combo box
@@ -242,144 +257,152 @@ private:
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
 
-					//Validation rule fill-out
-					for(int j = 0; j < field->GetValidationRules()->size(); j++)
-					{
-						if(const auto [rule, active] = field->GetValidationRules()->at(j); active != 0)
-						{
-							switch(rule)
-							{
-								case ALL_PRESENCE:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 1);
-											nk_label(nuklearContext, "The field is not allowed to be empty.", NK_LEFT);
-									}//End all presence
-									break;
-								case STRING_MAX_LENGTH:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 3);
-											nk_label(nuklearContext, "Text must not contain more than ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::stringMaxLengthBufferSize_,
-												nk_filter_decimal);
-											nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
-									}//End string max length
-									break;
-								case STRING_MIN_LENGTH:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 3);
-											nk_label(nuklearContext, "Text must not contain fewer than ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::stringMinLengthBufferSize_,
-												nk_filter_decimal);
-											nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
-									}//End string min length
-									break;
-								case STRING_STARTS_WITH_SUBSTRING:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 2);
-											nk_label(nuklearContext, "Text must begin with the following: ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::stringStartsWithSubstringBufferSize_,
-												nk_filter_decimal);
-									}//End string starts with substring
-									break;
-								case STRING_ENDS_WITH_SUBSTRING:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 2);
-											nk_label(nuklearContext, "Text must end with the following: ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::stringEndsWithSubstringBufferSize_,
-												nk_filter_decimal);
-									}//End string ends with substring
-									break;
-								case NUMBER_IS_NOT_NEGATIVE:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 1);
-											nk_label(nuklearContext, "The number must not be negative.", NK_TEXT_LEFT);
-									}//End number is not negative
-									break;
-								case NUMBER_IS_NEGATIVE:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 1);
-											nk_label(nuklearContext, "The number must be negative.", NK_TEXT_LEFT);
-									}//End number is negative
-									break;
-								case NUMBER_IS_NOT_ZERO:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 1);
-											nk_label(nuklearContext, "The number must not be zero.", NK_TEXT_LEFT);
-									}//End number is not zero
-									break;
-								case NUMBER_IS_LESS_THAN:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 2);
-											nk_label(nuklearContext, "The number must be less than ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::numberIsLessThanBufferSize_,
-												nk_filter_float);
-									}//End number is less than
-									break;
-								case NUMBER_IS_GREATER_THAN:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 2);
-											nk_label(nuklearContext, "The number must be greater than ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::numberIsGreaterThanBufferSize_,
-												nk_filter_float);
-									}//End number is greater than
-									break;
-								case INTEGER_DIVISIBLE_BY_INTEGER:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 3);
-											nk_label(nuklearContext, "The integer must divide into the whole number ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::integerDivisibleByIntegerBufferSize_,
-												nk_filter_decimal);
-											nk_label(nuklearContext, " with no remainder.", NK_TEXT_LEFT);
-									}//End integer divisible by integer
-									break;
-								case CHAR_IS_ONE_OF_CHARACTER_SET:
-									{
-										nk_layout_row_dynamic(nuklearContext, 24, 2);
-											nk_label(nuklearContext, "The character must be one of the following characters: ", NK_TEXT_LEFT);
-											nk_edit_string(nuklearContext,
-												NK_EDIT_SIMPLE,
-												field->GetValidationRuleParameters()->GetBuffer(rule),
-												field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
-												ValidationRuleParameter::charIsOneOfCharacterSetBufferSize_,
-												nk_filter_default);
-									}//End char is one of character set
-									break;
-								case NA: default: ;
-							}//End switch
-						}//End if
-					}//End for
-
 					//Delete Field Button
-					nk_layout_row_dynamic(nuklearContext, 24, 1);
-						if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
+					if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
+
+					//Validation rule fill-out
+					string label;
+					label.append(std::to_string(templateData->GetInternalID()));
+					label.append(field->GetIDBuffer());
+					label.append(" Validation Rule Details");
+					if(nk_tree_push_id(nuklearContext, NK_TREE_TAB, "Validation Rule Details", NK_MAXIMIZED, i))
+					{
+						for(int j = 0; j < field->GetValidationRules()->size(); j++)
+						{
+							if(const auto [rule, active] = field->GetValidationRules()->at(j); active != 0)
+							{
+								switch(rule)
+								{
+									case ALL_PRESENCE:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 1);
+												nk_label(nuklearContext, "The field is not allowed to be empty.", NK_LEFT);
+										}//End all presence
+										break;
+									case STRING_MAX_LENGTH:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 3);
+												nk_label(nuklearContext, "Text must not contain more than ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::stringMaxLengthBufferSize_,
+													nk_filter_decimal);
+												nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
+										}//End string max length
+										break;
+									case STRING_MIN_LENGTH:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 3);
+												nk_label(nuklearContext, "Text must not contain fewer than ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::stringMinLengthBufferSize_,
+													nk_filter_decimal);
+												nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
+										}//End string min length
+										break;
+									case STRING_STARTS_WITH_SUBSTRING:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 2);
+												nk_label(nuklearContext, "Text must begin with the following: ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::stringStartsWithSubstringBufferSize_,
+													nk_filter_default);
+										}//End string starts with substring
+										break;
+									case STRING_ENDS_WITH_SUBSTRING:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 2);
+												nk_label(nuklearContext, "Text must end with the following: ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::stringEndsWithSubstringBufferSize_,
+													nk_filter_default);
+										}//End string ends with substring
+										break;
+									case NUMBER_IS_NOT_NEGATIVE:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 1);
+												nk_label(nuklearContext, "The number must not be negative.", NK_TEXT_LEFT);
+										}//End number is not negative
+										break;
+									case NUMBER_IS_NEGATIVE:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 1);
+												nk_label(nuklearContext, "The number must be negative.", NK_TEXT_LEFT);
+										}//End number is negative
+										break;
+									case NUMBER_IS_NOT_ZERO:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 1);
+												nk_label(nuklearContext, "The number must not be zero.", NK_TEXT_LEFT);
+										}//End number is not zero
+										break;
+									case NUMBER_IS_LESS_THAN:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 2);
+												nk_label(nuklearContext, "The number must be less than ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::numberIsLessThanBufferSize_,
+													nk_filter_float);
+										}//End number is less than
+										break;
+									case NUMBER_IS_GREATER_THAN:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 2);
+												nk_label(nuklearContext, "The number must be greater than ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::numberIsGreaterThanBufferSize_,
+													nk_filter_float);
+										}//End number is greater than
+										break;
+									case INTEGER_DIVISIBLE_BY_INTEGER:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 3);
+												nk_label(nuklearContext, "The integer must divide into the whole number ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::integerDivisibleByIntegerBufferSize_,
+													nk_filter_decimal);
+												nk_label(nuklearContext, " with no remainder.", NK_TEXT_LEFT);
+										}//End integer divisible by integer
+										break;
+									case CHAR_IS_ONE_OF_CHARACTER_SET:
+										{
+											nk_layout_row_dynamic(nuklearContext, 24, 2);
+												nk_label(nuklearContext, "The character must be one of the following characters: ", NK_TEXT_LEFT);
+												nk_edit_string(nuklearContext,
+													NK_EDIT_SIMPLE,
+													field->GetValidationRuleParameters()->GetBuffer(rule),
+													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													ValidationRuleParameter::charIsOneOfCharacterSetBufferSize_,
+													nk_filter_default);
+										}//End char is one of character set
+										break;
+									case NA: default: ;
+								}//End switch
+								if(field->GetValidationRuleParameters()->GetBuffer(rule) != nullptr) ClearDeletedCharacters(field->GetValidationRuleParameters()->GetBuffer(rule), *field->GetValidationRuleParameters()->GetBufferCurrentLength(rule));
+							}//End if
+						}//End for
+						nk_tree_pop(nuklearContext);
+					}//End if
 			}//End for
 
 			//Add Field Button

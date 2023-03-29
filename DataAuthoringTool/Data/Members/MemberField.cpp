@@ -1,4 +1,7 @@
 #include "MemberField.h"
+
+#include <iostream>
+
 #include "Member.h"
 #include "../Templates/Template.h"
 
@@ -14,7 +17,59 @@ MemberField::MemberField(Member* parentMember, const DataType::DATA_TYPE dataTyp
 
 int MemberField::Validate()
 {
-	//TODO Validate functionality for Member Field
+	const auto templateField = parentMember_->GetType()->GetFieldAtIndex(fieldIndex_);
+	const auto validationRules = templateField->GetValidationRules();
+	const auto validationParameters = templateField->GetValidationRuleParameters();
+
+	for (auto& [rule, active] : *validationRules)
+	{
+		if(active != 0)
+		{
+			bool success;
+			switch (rule)
+			{
+				case ALL_PRESENCE:
+					success = ValidationFunction::Presence(GetDataBuffer());
+					break;
+				case STRING_MAX_LENGTH:
+					success = ValidationFunction::StringMaxLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case STRING_MIN_LENGTH:
+					success = ValidationFunction::StringMinLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case STRING_STARTS_WITH_SUBSTRING:
+					success = ValidationFunction::StringStartsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case STRING_ENDS_WITH_SUBSTRING:
+					success = ValidationFunction::StringEndsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case NUMBER_IS_NOT_NEGATIVE:
+					success = ValidationFunction::NumberIsNotNegative(GetDataBuffer());
+					break;
+				case NUMBER_IS_NEGATIVE:
+					success = ValidationFunction::NumberIsNegative(GetDataBuffer());
+					break;
+				case NUMBER_IS_NOT_ZERO:
+					success = ValidationFunction::NumberIsNotZero(GetDataBuffer());
+					break;
+				case NUMBER_IS_LESS_THAN:
+					success = ValidationFunction::NumberIsLessThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case NUMBER_IS_GREATER_THAN:
+					success = ValidationFunction::NumberIsGreaterThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+			case INTEGER_DIVISIBLE_BY_INTEGER:
+					success = ValidationFunction::IntegerDivisibleByInteger(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+			case CHAR_IS_ONE_OF_CHARACTER_SET:
+					success = ValidationFunction::CharIsOneOfCharacterSet(GetDataBuffer(), validationParameters->GetBuffer(rule));
+					break;
+				case NA: default: success = true;
+			}
+			std::cout << "Test " << toupper(rule) << " on " << fieldName_ << " had result " << success << std::endl;
+		}//End if
+	}//End for
+
 	return 1;
 }//End Validate
 

@@ -48,82 +48,81 @@ struct ValidationFunction
 		return std::invoke(std::any_cast<function<bool(Args...)>>(any_), std::forward<Args>(args)...);
 	}//End () operator
 
-	static bool Presence(const string& dataBuffer)
+	static bool Presence(const char* dataBuffer)
 	{
-		return !dataBuffer.empty();
-	}
+		return strlen(dataBuffer) != 0;
+	}//End Presence
 
-	static bool StringMaxLength(const string& dataBuffer, const int& maxLength)
+	static bool StringMaxLength(const char* dataBuffer, const char* maxLength)
 	{
-		return dataBuffer.size() <= maxLength;
-	}
+		return strlen(dataBuffer) <= strtol(maxLength, nullptr, 0);
+	}//End StringMaxLength
 
-	static bool StringMinLength(const string& dataBuffer, const int& minLength)
+	static bool StringMinLength(const char* dataBuffer, const char* minLength)
 	{
-		return dataBuffer.size() >= minLength;
-	}
+		return strlen(dataBuffer) >= strtol(minLength, nullptr, 0);
+	}//End StringMinLength
 
-	static bool StringStartsWithSubstring(const string& dataBuffer, const string& subString)
+	static bool StringStartsWithSubstring(const char* dataBuffer, const char* subString)
 	{
-		const auto temp = dataBuffer.substr(0, subString.size());
-		const auto result = subString.compare(temp);
+		const string data(dataBuffer);
+		const string sub(subString);
+		const auto temp = data.substr(0, sub.size());
+		const auto result = sub.compare(temp);
 		return result == 0 ? true : false;
-	}
+	}//End StringStartsWithSubstring
 
-	static bool StringEndsWithSubstring(const string& dataBuffer, const string& subString)
+	static bool StringEndsWithSubstring(const char* dataBuffer, const char* subString)
 	{
-		const auto temp = dataBuffer.substr(dataBuffer.size() - subString.size(), subString.size());
-		const auto result = subString.compare(temp);
+		const string data(dataBuffer);
+		const string sub(subString);
+		const auto temp = data.substr(data.size() - sub.size(), sub.size());
+		const auto result = sub.compare(temp);
 		return result == 0 ? true : false;
-	}
+	}//End StringEndsWithSubstring
 
-	static bool NumberIsNotNegative(const string& dataBuffer)
+	static bool NumberIsNotNegative(const char* dataBuffer)
 	{
-		return dataBuffer.at(0) != '-';
-	}
+		return dataBuffer[0] != '-';
+	}//End NumberIsNotNegative
 
-	static bool NumberIsNegative(const string& dataBuffer)
+	static bool NumberIsNegative(const char* dataBuffer)
 	{
-		return dataBuffer.at(0) == '-';
-	}
+		return dataBuffer[0] == '-';
+	}//End NumberIsNegative
 
-	static bool NumberIsNotZero(const string& dataBuffer)
+	static bool NumberIsNotZero(const char* dataBuffer)
 	{
-		const auto number = strtol(dataBuffer.c_str(), nullptr, 0);
+		const auto number = strtol(dataBuffer, nullptr, 0);
 		return number != 0;
-	}
+	}//End NumberIsNotZero
 
-	static bool NumberIsGreaterThan(const string& dataBuffer, const float& greaterThan)
+	static bool NumberIsGreaterThan(const char* dataBuffer, const char* greaterThan)
 	{
-		const auto number = strtof(dataBuffer.c_str(), nullptr);
-		return number > greaterThan;
-	}
+		const auto number = strtof(dataBuffer, nullptr);
+		return number > strtof(greaterThan, nullptr);
+	}//End NumberIsGreaterThan
 
-	static bool NumberIsLessThan(const string& dataBuffer, const float& lessThan)
+	static bool NumberIsLessThan(const char* dataBuffer, const char* lessThan)
 	{
-		const auto number = strtof(dataBuffer.c_str(), nullptr);
-		return number < lessThan;
-	}
+		const auto number = strtof(dataBuffer, nullptr);
+		return number < strtof(lessThan, nullptr);
+	}//End NumberIsLessThan
 
-	static bool IntegerDivisibleByInteger(const string& dataBuffer, const int& divisor)
+	static bool IntegerDivisibleByInteger(const char* dataBuffer, const char* divisor)
 	{
-		const auto number = strtol(dataBuffer.c_str(), nullptr, 0);
-		return number % divisor == 0;
-	}
+		const auto number = strtol(dataBuffer, nullptr, 0);
+		return number % strtol(divisor, nullptr, 0) == 0;
+	}//End IntegerDivisibleByInteger
 
-	static bool CharIsOneOfCharacterSet(const string& dataBuffer, const vector<char>& characterSet)
+	static bool CharIsOneOfCharacterSet(const char* dataBuffer, const char* characterSet)
 	{
-		auto checkChar = [](char character)
+		for (int i = 0; i < strlen(characterSet); i++)
 		{
-			return [character](const char otherCharacter) { return character == otherCharacter; };
-		};
-
-		if(const char dataCharacter = dataBuffer.at(0); std::ranges::any_of(characterSet, checkChar(dataCharacter)))
-		{
-			return true;
-		}//End if
+			if(dataBuffer[0] == characterSet[i]) return true;
+		}//End for
 		return false;
-	}
+	}//End CharIsOneOfCharSet
 
 private:
 	std::any any_;
@@ -197,7 +196,7 @@ class ValidationRule
 			}//End Char Rules
 		},//End Char Entry
 	};//End Map Initialization
-
+public:
 	inline static const map<const RULES, ValidationFunction> validationRuleFunctions_
 	{
 		{ALL_PRESENCE,					ValidationFunction(function(&ValidationFunction::Presence))},
@@ -213,7 +212,7 @@ class ValidationRule
 		{INTEGER_DIVISIBLE_BY_INTEGER,	ValidationFunction(function(&ValidationFunction::IntegerDivisibleByInteger))},
 		{CHAR_IS_ONE_OF_CHARACTER_SET,	ValidationFunction(function(&ValidationFunction::CharIsOneOfCharacterSet))},
 	};
-
+private:
 	inline static const map<const RULES, const string> validationRuleLabels_
 	{
 		{ALL_PRESENCE,					"Must not be left blank/empty"},
