@@ -117,9 +117,15 @@ private:
 		//LANDING
 		if(windowData == nullptr)
 		{
+			nk_layout_row_dynamic(nuklearContext, 64, 1);
+
 			//Template Button
+			if(nk_button_label(nuklearContext, "Open New Template Window")) 
+				CreateNewWindow("Template Window", TEMPLATE_WINDOW);
 
 			//Member Button
+			if(nk_button_label(nuklearContext, "Open New Member Window"))
+				CreateNewWindow("Member Window", MEMBER_WINDOW);
 
 			//Group Button
 		}//End if
@@ -392,9 +398,12 @@ private:
 		shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData();
 		if(windowData != nullptr)
 		{
-			if(nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 400, 400),
-		    NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-		    NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
+			string id;
+			id.append(nuklearWindow->GetWindowTitle());
+			id.append(std::to_string(nuklearWindow->GetWindowData()->GetInternalID()));
+			if(nk_begin_titled(nuklearContext, id.c_str(), nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 400, 400), 
+				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
 			{
 				//Render Header
 				if(nuklearWindow->GetHasHeader())
@@ -450,25 +459,68 @@ public:
 
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
 	{
+		const int startCount = activeNuklearWindows_.size();
 		for (NuklearWindow* window : activeNuklearWindows_)
 		{
 			if(const bool success = RenderWindow(nuklearContext, window); !success) return false;
+			if(activeNuklearWindows_.size() != startCount) return true;
 		}//End for
 		return true;
 	}//End RenderAllActiveWindows
 	
 	bool CreateNewWindow(const char* windowTitle, const WINDOW_TYPE windowType)
 	{
+		bool memberWindowNoID = false;
+		bool groupWindowNoID = false;
+		bool templateWindowNoID = false;
+
+		//Check active windows to see if an ID hasn't been assigned to the data being worked on
+		for (const auto& activeNuklearWindow : activeNuklearWindows_)
+		{
+			switch(activeNuklearWindow->GetWindowType())
+			{
+				case MEMBER_WINDOW:
+					if(strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
+					{
+						memberWindowNoID = true;
+					}//End if
+					break;
+				case GROUP_WINDOW:
+					if(strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
+					{
+						groupWindowNoID = true;
+					}//End if
+					break;
+				case TEMPLATE_WINDOW:
+					if(strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
+					{
+						templateWindowNoID = true;
+					}//End if
+					break;
+
+				case NONE: case LANDING: default: continue;
+			}//End switch
+		}//End for
+
 		switch(windowType)
 		{
-		case MEMBER_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member(DataManager::GetInternalID(true)))));
+			case MEMBER_WINDOW:
+				if(!memberWindowNoID)
+				{
+					activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member(DataManager::GetInternalID(true)))));
+				}//End if
 				break;
 			case GROUP_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group(DataManager::GetInternalID(true)))));
+				if(!groupWindowNoID)
+				{
+					activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group(DataManager::GetInternalID(true)))));
+				}//End if
 				break;
 			case TEMPLATE_WINDOW:
-				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template(DataManager::GetInternalID(true)))));
+				if(!templateWindowNoID)
+				{
+					activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template(DataManager::GetInternalID(true)))));
+				}//End if
 				break;
 			case LANDING: 
 				activeNuklearWindows_.push_back(new NuklearWindow(windowType, nullptr));
