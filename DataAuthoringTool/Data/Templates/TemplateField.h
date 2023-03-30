@@ -13,11 +13,13 @@ using std::string;
 using std::vector;
 
 //Forward Declarations
-//class ValidationRule;
+class Template;
 
 class TemplateField : public IDelete
 {
 public:
+	TemplateField(Template* parentTemplate) : parentTemplate_(parentTemplate) {};
+	bool operator==(const TemplateField&) const;
 	int Delete() override;
 	char* GetIDBuffer() { return idBuffer_; }
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
@@ -31,12 +33,13 @@ public:
 	ValidationRuleParameter* GetValidationRuleParameters(){ return &validationRuleParameters_; }
 
 private:
-	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name
 	constexpr static int bufferMax_ = 64;
 
+	//Note: ID referred to in-program as "name", but called ID internally to indicate that each field in a template must have a unique name
 	char idBuffer_[bufferMax_] = {};
 	int idBufferCurrentLength_ = 0;
 
+	Template* parentTemplate_;
 	string id_;
 	DataType::DATA_TYPE dataType_ = DataType::NONE;
 	int typeInt_ = DataType::NONE;

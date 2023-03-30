@@ -261,11 +261,7 @@ private:
 					if(nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
 
 					//Validation rule fill-out
-					string label;
-					label.append(std::to_string(templateData->GetInternalID()));
-					label.append(field->GetIDBuffer());
-					label.append(" Validation Rule Details");
-					if(nk_tree_push_id(nuklearContext, NK_TREE_TAB, "Validation Rule Details", NK_MAXIMIZED, i))
+					if(nk_tree_push_id(nuklearContext, NK_TREE_TAB, "Validation Details", NK_MAXIMIZED, i))
 					{
 						for(int j = 0; j < field->GetValidationRules()->size(); j++)
 						{

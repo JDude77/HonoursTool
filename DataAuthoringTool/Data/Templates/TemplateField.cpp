@@ -1,8 +1,24 @@
 #include "TemplateField.h"
 
+#include "Template.h"
+
+bool TemplateField::operator==(const TemplateField& rhs) const
+{
+	const auto comp = string(idBuffer_);
+	const auto comp2 = string(rhs.idBuffer_);
+	return comp == comp2 && parentTemplate_ == rhs.parentTemplate_;
+}//End == operator overload
+
 int TemplateField::Delete()
 {
 	//TODO: Template Field delete functionality
+	//Clear data
+	memset(idBuffer_, '\0', bufferMax_);
+	idBufferCurrentLength_ = 0;
+
+	//Remove self from parent template field list
+	parentTemplate_->DeleteField(this);
+	
 	return 1;
 }//End int
 

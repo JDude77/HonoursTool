@@ -28,6 +28,7 @@ public:
 	TemplateField* GetFieldAtIndex(int index);
 	[[nodiscard]] const vector<TemplateField> GetFields() const { return fields_; }
 	int AddNewField();
+	int DeleteField(const TemplateField* field);
 	
 private:
 	vector<TemplateField> fields_;

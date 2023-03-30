@@ -40,6 +40,16 @@ TemplateField* Template::GetFieldAtIndex(const int index)
 
 int Template::AddNewField()
 {
-	fields_.emplace_back();
+	fields_.emplace_back(this);
 	return 1;
 }//End AddNewField
+
+int Template::DeleteField(const TemplateField* field)
+{
+	if(const auto position = std::find(fields_.begin(), fields_.end(), *field); position != fields_.end())
+	{
+		fields_.erase(position);
+		return 1;
+	}//End if
+	return 0;
+}
