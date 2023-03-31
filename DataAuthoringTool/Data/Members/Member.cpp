@@ -21,36 +21,41 @@ int Member::Load()
 int Member::Export(PrimaryData* caller)
 {
 	//TODO: Member export functionality
+	//Create JSON Document
 	Document jsonDocument;
 	jsonDocument.SetObject();
-	for (MemberField field : fields_)
+	Document::AllocatorType& allocator = jsonDocument.GetAllocator();
+
+	//Loop through every member field
+	for (const MemberField& field : fields_)
 	{
 		auto name = GenericValue<UTF8<>>::StringRefType(field.GetName());
+		//Correctly grab the data in a JSON value for each type
 		switch(field.GetDataType())
 		{
 			case DataType::STRING:
 				{
 					Value stringVal;
 					stringVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
-					jsonDocument.AddMember(name, stringVal, jsonDocument.GetAllocator());
+					jsonDocument.AddMember(name, stringVal, allocator);
 				}//End String data handling
 				break;
 
 			case DataType::INTEGER:
 				{
 					Value integerVal;
-					int data = std::strtol(field.GetDataBuffer(), nullptr, 0);
+					int data = strtol(field.GetDataBuffer(), nullptr, 0);
 					integerVal.SetInt(data);
-					jsonDocument.AddMember(name, integerVal, jsonDocument.GetAllocator());
+					jsonDocument.AddMember(name, integerVal, allocator);
 				}//End Integer data handling
 				break;
 
 			case DataType::FLOAT:
 				{
 					Value floatVal;
-					float data = std::strtof(field.GetDataBuffer(), nullptr);
+					float data = strtof(field.GetDataBuffer(), nullptr);
 					floatVal.SetFloat(data);
-					jsonDocument.AddMember(name, floatVal, jsonDocument.GetAllocator());
+					jsonDocument.AddMember(name, floatVal, allocator);
 				}//End Float data handling
 				break;
 
@@ -58,7 +63,7 @@ int Member::Export(PrimaryData* caller)
 				{
 					Value charVal;
 					charVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
-					jsonDocument.AddMember(name, charVal, jsonDocument.GetAllocator());
+					jsonDocument.AddMember(name, charVal, allocator);
 				}//End Char data handling
 				break;
 
@@ -66,7 +71,7 @@ int Member::Export(PrimaryData* caller)
 				{
 					Value booleanVal;
 					booleanVal.SetBool(field.GetBooleanData());
-					jsonDocument.AddMember(name, booleanVal, jsonDocument.GetAllocator());
+					jsonDocument.AddMember(name, booleanVal, allocator);
 				}//End Boolean data handling
 				break;
 			default: break;
