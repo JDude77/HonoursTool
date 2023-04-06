@@ -27,6 +27,7 @@ public:
 	int Validate() override;
 	int Delete() override;
 	int Export(PrimaryData* caller = nullptr) override;
+	bool IsEmpty() const override {  return PrimaryData::IsEmpty() && members_.empty() && templates_.empty(); }
 
 private:
 	//String: Member ID, Shared Pointer: Member pointer to be re-retrieved using the ID if memory location changes

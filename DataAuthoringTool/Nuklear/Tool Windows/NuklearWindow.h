@@ -18,7 +18,7 @@ class DataManager;
 
 struct NuklearWindow
 {
-	NuklearWindow(WINDOW_TYPE windowType, shared_ptr<DataManager> dataManager, shared_ptr<PrimaryData> windowData = nullptr, const char* windowTitle = nullptr);
+	NuklearWindow(WINDOW_TYPE windowType, const shared_ptr<DataManager>& dataManager, const shared_ptr<PrimaryData>& windowData = nullptr, const char* windowTitle = nullptr);
 	~NuklearWindow();
 	bool UpdateWindowTitle(const char* newWindowTitle);
 	[[nodiscard]] const char* GetWindowTitle() const { return windowTitle_; }

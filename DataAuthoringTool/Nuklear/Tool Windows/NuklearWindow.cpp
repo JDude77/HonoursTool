@@ -8,7 +8,7 @@
 
 using std::dynamic_pointer_cast;
 
-NuklearWindow::NuklearWindow(WINDOW_TYPE windowType, shared_ptr<DataManager> dataManager, shared_ptr<PrimaryData> windowData, const char* windowTitle) : windowData_(windowData), windowType_(windowType)
+NuklearWindow::NuklearWindow(const WINDOW_TYPE windowType, const shared_ptr<DataManager>& dataManager, const shared_ptr<PrimaryData>& windowData, const char* windowTitle) : windowData_(windowData), windowType_(windowType)
 {
 	switch (windowType_)
 	{

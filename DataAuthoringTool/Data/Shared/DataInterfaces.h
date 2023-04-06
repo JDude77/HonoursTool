@@ -51,6 +51,7 @@ public:
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
 	const static int GetBufferMax() { return bufferMax_; }
 	int GetInternalID() const { return internalID_; }
+	virtual bool IsEmpty() const { return strlen(idBuffer_) == 0 && strlen(nameBuffer_) == 0; }
 
 	void UpdateNameBuffer()
 	{
@@ -76,7 +77,5 @@ protected:
 	int nameBufferCurrentLength_ = 0;
 	char idBuffer_[bufferMax_] = {};
 	int idBufferCurrentLength_ = 0;
-	string name_;
-	string id_;
 };
 #endif

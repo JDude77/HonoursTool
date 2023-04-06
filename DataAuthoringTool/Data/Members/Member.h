@@ -26,6 +26,7 @@ public:
 	int Export(PrimaryData* caller = nullptr) override;
 	int Delete() override;
 	int Validate() override;
+	bool IsEmpty() const override { return PrimaryData::IsEmpty() && fields_.empty() && type_ == nullptr; }
 
 	shared_ptr<Template> GetType() { return type_; }
 	int GetTemplateIndex() const { return templateIndex_; }

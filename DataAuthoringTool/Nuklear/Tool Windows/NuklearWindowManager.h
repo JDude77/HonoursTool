@@ -32,7 +32,7 @@ private:
 		//TODO: Refactor this to not happen every frame of rendering a member window - only on templates updating
 		cachedTemplates_ = make_shared<vector<Template>>(dataManager_->GetAllTemplates());
 
-		int cachedTemplateIndex = memberData->GetTemplateIndex();
+		const int cachedTemplateIndex = memberData->GetTemplateIndex();
 
 		vector<const char*> templateNames;
 		for (auto& temp : *cachedTemplates_)
@@ -265,6 +265,7 @@ private:
 					{
 						for(int j = 0; j < field->GetValidationRules()->size(); j++)
 						{
+							ValidationRuleParameter& validationRuleParameters = *field->GetValidationRuleParameters();
 							if(const auto [rule, active] = field->GetValidationRules()->at(j); active != 0)
 							{
 								switch(rule)
@@ -281,8 +282,8 @@ private:
 												nk_label(nuklearContext, "Text must not contain more than ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::stringMaxLengthBufferSize_,
 													nk_filter_decimal);
 												nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
@@ -294,8 +295,8 @@ private:
 												nk_label(nuklearContext, "Text must not contain fewer than ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::stringMinLengthBufferSize_,
 													nk_filter_decimal);
 												nk_label(nuklearContext, " characters.", NK_TEXT_LEFT);
@@ -307,8 +308,8 @@ private:
 												nk_label(nuklearContext, "Text must begin with the following: ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::stringStartsWithSubstringBufferSize_,
 													nk_filter_default);
 										}//End string starts with substring
@@ -319,8 +320,8 @@ private:
 												nk_label(nuklearContext, "Text must end with the following: ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::stringEndsWithSubstringBufferSize_,
 													nk_filter_default);
 										}//End string ends with substring
@@ -349,8 +350,8 @@ private:
 												nk_label(nuklearContext, "The number must be less than ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::numberIsLessThanBufferSize_,
 													nk_filter_float);
 										}//End number is less than
@@ -361,8 +362,8 @@ private:
 												nk_label(nuklearContext, "The number must be greater than ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::numberIsGreaterThanBufferSize_,
 													nk_filter_float);
 										}//End number is greater than
@@ -373,8 +374,8 @@ private:
 												nk_label(nuklearContext, "The integer must divide into the whole number ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::integerDivisibleByIntegerBufferSize_,
 													nk_filter_decimal);
 												nk_label(nuklearContext, " with no remainder.", NK_TEXT_LEFT);
@@ -386,15 +387,15 @@ private:
 												nk_label(nuklearContext, "The character must be one of the following characters: ", NK_TEXT_LEFT);
 												nk_edit_string(nuklearContext,
 													NK_EDIT_SIMPLE,
-													field->GetValidationRuleParameters()->GetBuffer(rule),
-													field->GetValidationRuleParameters()->GetBufferCurrentLength(rule),
+													validationRuleParameters.GetBuffer(rule),
+													validationRuleParameters.GetBufferCurrentLength(rule),
 													ValidationRuleParameter::charIsOneOfCharacterSetBufferSize_,
 													nk_filter_default);
 										}//End char is one of character set
 										break;
 									case NA: default: ;
 								}//End switch
-								if(field->GetValidationRuleParameters()->GetBuffer(rule) != nullptr) ClearDeletedCharacters(field->GetValidationRuleParameters()->GetBuffer(rule), *field->GetValidationRuleParameters()->GetBufferCurrentLength(rule));
+								if(validationRuleParameters.GetBuffer(rule) != nullptr) ClearDeletedCharacters(validationRuleParameters.GetBuffer(rule), *validationRuleParameters.GetBufferCurrentLength(rule));
 							}//End if
 						}//End for
 						nk_tree_pop(nuklearContext);

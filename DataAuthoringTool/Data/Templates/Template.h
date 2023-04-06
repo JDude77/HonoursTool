@@ -23,6 +23,7 @@ public:
 	int Load() override;
 	int Export(PrimaryData* caller = nullptr) override;
 	int Delete() override;
+	bool IsEmpty() const override { return PrimaryData::IsEmpty() && fields_.empty(); }
 
 	[[nodiscard]] int GetNumberOfFields() const { return fields_.size(); }
 	TemplateField* GetFieldAtIndex(int index);
