@@ -75,6 +75,30 @@ void DataManager::AddInstanceToDataMap(Group instance)
 	++numberOfGroups_;
 }//End AddInstanceToDataMap (Group)
 
+void DataManager::RemoveInstanceFromDataMap(Member instance)
+{
+	const auto iterator = members_.find(instance.GetIDBuffer());
+	if(iterator == members_.end()) return;
+
+	members_.erase(iterator);
+}//End RemoveInstanceFromDataMap (Member)
+
+void DataManager::RemoveInstanceFromDataMap(Template instance)
+{
+	const auto iterator = templates_.find(instance.GetIDBuffer());
+	if(iterator == templates_.end()) return;
+
+	templates_.erase(iterator);
+}//End RemoveInstanceFromDataMap (Template)
+
+void DataManager::RemoveInstanceFromDataMap(Group instance)
+{
+	const auto iterator = groups_.find(instance.GetIDBuffer());
+	if(iterator == groups_.end()) return;
+
+	groups_.erase(iterator);
+}//End RemoveInstanceFromDataMap (Group)
+
 void DataManager::UpdateInstance(Member* instance)
 {
 	if(members_.contains(instance->GetIDBuffer()))

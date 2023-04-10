@@ -3209,6 +3209,8 @@ extern "C" {
 	NK_API nk_bool nk_select_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags align, nk_bool value);
 	NK_API nk_bool nk_select_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags align, nk_bool value);
 
+	NK_API nk_int nk_select_tab(struct nk_context*, const char*, int active);
+
 	/* =============================================================================
 	 *
 	 *                                  SLIDER
@@ -24902,7 +24904,19 @@ nk_radio_label(struct nk_context* ctx, const char* label, nk_bool* active)
 }
 
 
-
+NK_API nk_int
+nk_selectable_tab(struct nk_context* ctx, const char* label, nk_int active)
+{
+	const struct nk_user_font *f = ctx->style.font;
+	float text_width = f->width(f->userdata, f->height, label, nk_strlen(label));
+	float widget_width = text_width + 3 * ctx->style.button.padding.x;
+	//nk_layout_row_push(ctx, widget_width);
+	struct nk_style_item c = ctx->style.button.normal;
+	if (active) {ctx->style.button.normal = ctx->style.button.active;}
+	int r = nk_button_label (ctx, label);
+	ctx->style.button.normal = c;
+	return r;
+}
 
 
 /* ===============================================================

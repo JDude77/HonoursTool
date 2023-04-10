@@ -34,6 +34,11 @@ int Template::Export(PrimaryData* caller)
 	jsonDocument.SetObject();
 	auto& documentAllocator = jsonDocument.GetAllocator();
 
+	//Add template name to the JSON document
+	Value nameValue;
+	nameValue.SetString(GetNameBuffer(), documentAllocator);
+	jsonDocument.AddMember("Name", nameValue, documentAllocator);
+
 	//Create fields array value
 	Value fields(kArrayType);
 	for (TemplateField field : fields_)

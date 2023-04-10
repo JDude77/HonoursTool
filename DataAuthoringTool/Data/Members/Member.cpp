@@ -26,6 +26,11 @@ int Member::Export(PrimaryData* caller)
 	jsonDocument.SetObject();
 	Document::AllocatorType& allocator = jsonDocument.GetAllocator();
 
+	//Get member name and put it in the doc
+	Value nameValue;
+	nameValue.SetString(GenericValue<UTF8<>>::StringRefType(GetNameBuffer()));
+	jsonDocument.AddMember("Name", nameValue, allocator);
+
 	//Loop through every member field
 	for (const MemberField& field : fields_)
 	{

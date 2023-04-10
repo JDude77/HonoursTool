@@ -43,6 +43,10 @@ public:
 	void AddInstanceToDataMap(Template instance);
 	void AddInstanceToDataMap(Group instance);
 
+	void RemoveInstanceFromDataMap(Member instance);
+	void RemoveInstanceFromDataMap(Template instance);
+	void RemoveInstanceFromDataMap(Group instance);
+
 	void UpdateInstance(Member* instance);
 	void UpdateInstance(Template* instance);
 	void UpdateInstance(Group* instance);

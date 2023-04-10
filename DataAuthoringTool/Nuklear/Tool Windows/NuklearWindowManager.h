@@ -123,6 +123,57 @@ private:
 		}//End if
 	}//End ClearDeletedCharacters
 
+	bool RenderGroupTemplateTabs(nk_context* nuklearContext, const shared_ptr<Group> groupData, bool& value)
+	{
+		static int activeTab = 0;
+
+		static int numberOfTabs = groupData->GetNumberOfTemplates();
+
+		nk_style_push_vec2(nuklearContext, &nuklearContext->style.window.spacing, nk_vec2(0, 0));
+		nk_style_push_float(nuklearContext, &nuklearContext->style.button.rounding, 0);
+		nk_layout_row_dynamic(nuklearContext, 24, numberOfTabs + 1);
+		//Tab with template listing added members
+		for(int i = 0; i < groupData->GetNumberOfTemplates(); i++)
+		{
+			const auto templateLabel = groupData->GetTemplates().at(i)->GetIDBuffer();
+			if(nk_selectable_tab(nuklearContext, templateLabel, activeTab == i)) { activeTab = i; }
+		}//End for
+		//Add template button
+		vector<const char*> templateNames;
+		//Dropdown/button combo which selects and adds template at the same time
+		for (auto& temp : *cachedTemplates_)
+		{
+			if(temp.GetInternalID() == -1) continue;
+			templateNames.push_back(temp.GetIDBuffer());
+		}//End for
+		static int templateIndex = -1;
+		if(nk_combo_begin_label(nuklearContext, "Add Template To Group", nk_vec2(300, 300)))
+		{
+			nk_layout_row_dynamic(nuklearContext, 24, 1);
+
+			for(int i = 0; i < templateNames.size(); i++)
+			{
+				if(nk_button_label(nuklearContext, templateNames.at(i))) { templateIndex = i; break; }
+			}//End for
+
+			if(templateIndex != -1)
+			{
+				groupData->AddTemplateToGroup(make_shared<Template>(dataManager_->GetAllTemplates().at(templateIndex+1)));
+				templateIndex = -1;
+				nk_combo_close(nuklearContext);
+				nk_style_pop_float(nuklearContext);
+				nk_style_pop_vec2(nuklearContext);
+				value = true;
+				return true;
+			}//End if
+
+			nk_combo_end(nuklearContext);
+		}//End if
+		nk_style_pop_float(nuklearContext);
+		nk_style_pop_vec2(nuklearContext);
+		return false;
+	}//End RenderGroupTemplateTabs
+
 	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
 	{
 		#pragma region Landing
@@ -207,8 +258,11 @@ private:
 		//GROUP
 		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
-			//Future me problem
-			if(nk_button_label(nuklearContext, "Debug: Update Group In Data Manager")) dataManager_->UpdateInstance(groupData.get());
+			//Render the tabs to let you select which template is currently active
+			//Needs a formatting update but good enough for now
+			if (bool tabsUpdated; RenderGroupTemplateTabs(nuklearContext, groupData, tabsUpdated)) return tabsUpdated;
+
+
 		}//End else if
 		#pragma endregion
 
@@ -416,6 +470,7 @@ private:
 	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
 	{
 		shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData();
+
 		if(windowData != nullptr)
 		{
 			string id;
@@ -441,6 +496,52 @@ private:
 				}//End if
 			}//End nk_begin
 			nk_end(nuklearContext);
+
+			//After data processing, check if the window is closed
+			if(nk_window_is_closed(nuklearContext, id.c_str()))
+			{
+				//Check if the window's data is a valid member
+				if(const auto memberData = dynamic_pointer_cast<Member>(windowData); memberData != nullptr)
+				{
+					//If the data is empty
+					if(memberData->IsEmpty())
+					{
+						//Remove the empty item from the data manager to not clog up the system with blank members
+						dataManager_->RemoveInstanceFromDataMap(*memberData);
+						//Remove the member window from the active window list
+						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+						return false;
+					}//End if
+				}//End if
+
+				//Check if the window's data is a valid template
+				else if(const auto templateData = dynamic_pointer_cast<Template>(windowData); templateData != nullptr)
+				{
+					//If the data is empty
+					if(templateData->IsEmpty())
+					{
+						//Remove the empty item from the data manager to not clog up the system with blank templates
+						dataManager_->RemoveInstanceFromDataMap(*templateData);
+						//Remove the template window from the active window list
+						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+						return false;
+					}//End if
+				}//End else if
+
+				//Check if the window's data is a valid template
+				else if(const auto groupData = dynamic_pointer_cast<Group>(windowData); groupData != nullptr)
+				{
+					//If the data is empty
+					if(groupData->IsEmpty())
+					{
+						//Remove the empty item from the data manager to not clog up the system with blank templates
+						dataManager_->RemoveInstanceFromDataMap(*groupData);
+						//Remove the template window from the active window list
+						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+						return false;
+					}//End if
+				}//End else if
+			}//End if
 		}//End if
 
 		//Landing window has no data, as it is essentially just buttons to open subwindows
@@ -455,11 +556,6 @@ private:
 			nk_end(nuklearContext);
 		}//End else if
 
-		//If THIS is reached, I've messed up
-		else
-		{
-			return false;
-		}//End else
 		
 		return true;
 	}//End RenderWindow
@@ -475,6 +571,9 @@ public:
 
 		//Create member window
 		CreateNewWindow("Test Member Window", MEMBER_WINDOW);
+
+		//Create group window
+		CreateNewWindow("Test Group Window", GROUP_WINDOW);
 	}//End constructor
 
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
