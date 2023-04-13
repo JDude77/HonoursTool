@@ -39,6 +39,9 @@ public:
 	int AddTemplateToGroup(const shared_ptr<Template>& newTemplate);
 	int AddMemberToGroup(const shared_ptr<Member>& newMember);
 
+	int RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove);
+	int RemoveMemberFromGroup(const shared_ptr<Member>& memberToRemove);
+
 private:
 	//String: Member ID, Shared Pointer: Member pointer to be re-retrieved using the ID if memory location changes
 	vector<pair<string, shared_ptr<Member>>> members_;

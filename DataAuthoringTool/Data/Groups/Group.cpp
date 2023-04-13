@@ -98,3 +98,54 @@ int Group::AddMemberToGroup(const shared_ptr<Member>& newMember)
 	members_.emplace_back(id, newMember);
 	return 1;
 }//End AddMemberToGroup
+
+int Group::RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove)
+{
+	std::pair<string, shared_ptr<Template>> finderPair;
+	finderPair.first = templateToRemove->GetIDBuffer();
+	finderPair.second = templateToRemove;
+
+	const auto it = std::ranges::find(templates_, finderPair);
+
+	//Check to see if it's actually in the group, return 0 if it isn't
+	if(it == templates_.end()) return 0;
+
+	//Remove all members of that template from the group
+	vector<std::ranges::borrowed_iterator_t<vector<pair<string, shared_ptr<Member>>>&>> membersToErase;
+	for (auto& member : members_)
+	{
+		if(member.second->GetType()->GetIDBuffer() == templateToRemove->GetIDBuffer())
+		{
+			//Safely mark all of them for deletion by grabbing a reference to their iterator positions
+			membersToErase.push_back(std::ranges::find(members_, member));
+		}//End if
+	}//End for
+
+	//Go through the iterators and remove the members from the original list
+	for (const auto& memberToErase : membersToErase)
+	{
+		members_.erase(memberToErase);
+	}//End for
+
+	//Remove the template from the group
+	templates_.erase(it);
+
+	return 1;
+}//End RemoveTemplateFromGroup
+
+int Group::RemoveMemberFromGroup(const shared_ptr<Member>& memberToRemove)
+{
+	std::pair<string, shared_ptr<Member>> finderPair;
+	finderPair.first = memberToRemove->GetIDBuffer();
+	finderPair.second = memberToRemove;
+
+	const auto it = std::ranges::find(members_, finderPair);
+
+	//Check to see if it's actually in the group, return 0 if it isn't
+	if(it == members_.end()) return 0;
+
+	//If it IS in the group, erase/remove it from the group
+	members_.erase(it);
+
+	return 1;
+}//End RemoveMemberFromGroup

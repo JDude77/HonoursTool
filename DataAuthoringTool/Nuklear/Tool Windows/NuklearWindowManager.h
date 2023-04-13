@@ -3,6 +3,8 @@
 //Not ideal, but avoids re-definition errors with Nuklear that would otherwise crop up
 #ifndef NUKLEAR_WINDOW_MANAGER
 #define NUKLEAR_WINDOW_MANAGER
+#include <iostream>
+
 #include "NuklearWindow.h"
 #include <vector>
 
@@ -123,10 +125,8 @@ private:
 		}//End if
 	}//End ClearDeletedCharacters
 
-	bool RenderGroupTemplateTabs(nk_context* nuklearContext, const shared_ptr<Group> groupData, bool& value)
+	bool RenderGroupTemplateTabs(nk_context* nuklearContext, const shared_ptr<Group>& groupData, int activeTab, bool& value)
 	{
-		static int activeTab = 0;
-
 		static int numberOfTabs = groupData->GetNumberOfTemplates();
 
 		nk_style_push_vec2(nuklearContext, &nuklearContext->style.window.spacing, nk_vec2(0, 0));
@@ -251,6 +251,7 @@ private:
 						nk_label(nuklearContext, "", NK_LEFT);
 					}//End else
 			}//End for
+			dataManager_->UpdateInstance(memberData.get());
 		}//End else if
 		#pragma endregion
 
@@ -258,11 +259,92 @@ private:
 		//GROUP
 		else if(const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
+			static int activeTab = 0;
+
 			//Render the tabs to let you select which template is currently active
 			//Needs a formatting update but good enough for now
-			if (bool tabsUpdated; RenderGroupTemplateTabs(nuklearContext, groupData, tabsUpdated)) return tabsUpdated;
+			if (bool tabsUpdated; RenderGroupTemplateTabs(nuklearContext, groupData, activeTab, tabsUpdated)) return tabsUpdated;
+			//Show all members in the group
+			const auto groupMembers = groupData->GetMembers();
+			vector<shared_ptr<Member>> groupMembersOfTemplateTab;
+			for (auto& member : groupMembers)
+			{
+				if(strcmp(member->GetType()->GetIDBuffer(), groupData->GetTemplates().at(activeTab)->GetIDBuffer()) == 0)
+				{
+					groupMembersOfTemplateTab.push_back(member);
+				}//End if
+			}//End for
 
+			//Set formatting for name - validate - delete row layout
+			nk_layout_row_dynamic(nuklearContext, 24, 3);
+				for (const auto& member : groupMembersOfTemplateTab)
+				{
+					string fullNameOfMember;
+					fullNameOfMember.append(member->GetNameBuffer());
+					fullNameOfMember.append(" (ID: ");
+					fullNameOfMember.append(member->GetIDBuffer());
+					fullNameOfMember.append(")");
 
+					nk_label(nuklearContext, fullNameOfMember.c_str(), NK_TEXT_LEFT);
+
+					if(nk_button_label(nuklearContext, "VALIDATE"))
+					{
+						member->Validate();
+					}//End if
+					if(nk_button_label(nuklearContext, "REMOVE"))
+					{
+						groupData->RemoveMemberFromGroup(member);
+					}//End if
+				}//End for
+
+			//Add member button
+			nk_layout_row_dynamic(nuklearContext, 24, 1);
+				//Similar button/dropdown system to the add template dropdown
+				if(nk_combo_begin_label(nuklearContext, "ADD MEMBER", nk_vec2(300, 300)))
+				{
+					//Cache all members from the data manager for sorting
+					static auto addableMembers = dataManager_->GetAllMembers();
+					//Create the vector of sorted members
+					vector<Member> allMembersOfTemplateNotAlreadyInGroup;
+					//For every member
+					for (auto& addableMember : addableMembers)
+					{
+						//If the member is of the same type as the current active template tab
+						if(strcmp(addableMember.GetType()->GetIDBuffer(), groupData->GetTemplates().at(activeTab)->GetIDBuffer()) == 0)
+						{
+							//If the member isn't already in the group
+							if(std::ranges::find(groupMembersOfTemplateTab, make_shared<Member>(addableMember)) == groupMembersOfTemplateTab.end())
+							{
+								//Add it to the list of possible members to add
+								allMembersOfTemplateNotAlreadyInGroup.push_back(addableMember);
+							}//End if
+						}//End if
+					}//End for
+					nk_layout_row_dynamic(nuklearContext, 24, 1);
+
+					//Add a button for each addable member
+					for (auto& member : allMembersOfTemplateNotAlreadyInGroup)
+					{
+						string fullNameOfMember;
+						fullNameOfMember.append(member.GetNameBuffer());
+						fullNameOfMember.append(" (ID: ");
+						fullNameOfMember.append(member.GetIDBuffer());
+						fullNameOfMember.append(")");
+
+						if(nk_button_label(nuklearContext, fullNameOfMember.c_str()))
+						{
+							groupData->AddMemberToGroup(make_shared<Member>(member));
+							//Force refresh of addable members of type
+							allMembersOfTemplateNotAlreadyInGroup.erase(allMembersOfTemplateNotAlreadyInGroup.begin(), allMembersOfTemplateNotAlreadyInGroup.end());
+							nk_combo_close(nuklearContext);
+							return true;
+						}//End if
+					}//End for
+
+					nk_combo_end(nuklearContext);
+				}//End if
+
+			dataManager_->UpdateInstance(groupData.get());
 		}//End else if
 		#pragma endregion
 
