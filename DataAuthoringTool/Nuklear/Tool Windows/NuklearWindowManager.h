@@ -97,17 +97,24 @@ private:
 
 	static void PreventNegativeAndNonNegativeRule(TemplateField* field, const int j)
 	{
+		//Check to see if the number is negative rule has just been activated
 		if(field->GetValidationRules()->at(j).first == NUMBER_IS_NEGATIVE)
 		{
+			//If the number is not negative rule is ALSO active
 			if(field->GetValidationRules()->at(j-1).second == 1 && field->GetValidationRules()->at(j).second == 1)
 			{
+				//Deactivate the number is not negative rule
 				field->GetValidationRules()->at(j-1).second = 0;
 			}//End if
 		}//End if
+
+		//Check to see if the number is not negative rule has just been activated
 		if(field->GetValidationRules()->at(j).first == NUMBER_IS_NOT_NEGATIVE)
 		{
+			//If the number is negative rule is ALSO active
 			if(field->GetValidationRules()->at(j+1).second == 1 && field->GetValidationRules()->at(j).second == 1)
 			{
+				//Deactivate the number is negative rule
 				field->GetValidationRules()->at(j+1).second = 0;
 			}//End if
 		}//End if
@@ -115,10 +122,13 @@ private:
 
 	static void ClearDeletedCharacters(char* idBuffer, const int idBufferCurrentLength)
 	{
+		//Check to see if the current buffer has more characters in it than there should be
 		if(strlen(idBuffer) > idBufferCurrentLength)
 		{
+			//Loop through every value after the end of the expected length of the buffer
 			for (int j = idBufferCurrentLength; j < TemplateField::GetBufferMax(); j++)
 			{
+				//Replace with a null character if it isn't already null - if it is, stop
 				if(idBuffer[j] == '\0') break;
 				idBuffer[j] = '\0';
 			}//End for
@@ -127,30 +137,36 @@ private:
 
 	bool RenderGroupTemplateTabs(nk_context* nuklearContext, const shared_ptr<Group>& groupData, int activeTab, bool& value)
 	{
+		//Get the number of tabs that should be active
 		static int numberOfTabs = groupData->GetNumberOfTemplates();
 
+		//Set up the tab styling
 		nk_style_push_vec2(nuklearContext, &nuklearContext->style.window.spacing, nk_vec2(0, 0));
 		nk_style_push_float(nuklearContext, &nuklearContext->style.button.rounding, 0);
 		nk_layout_row_dynamic(nuklearContext, 24, numberOfTabs + 1);
+
 		//Tab with template listing added members
 		for(int i = 0; i < groupData->GetNumberOfTemplates(); i++)
 		{
 			const auto templateLabel = groupData->GetTemplates().at(i)->GetIDBuffer();
 			if(nk_selectable_tab(nuklearContext, templateLabel, activeTab == i)) { activeTab = i; }
 		}//End for
-		//Add template button
+
+		//Get list of names for templates
 		vector<const char*> templateNames;
-		//Dropdown/button combo which selects and adds template at the same time
 		for (auto& temp : *cachedTemplates_)
 		{
 			if(temp.GetInternalID() == -1) continue;
 			templateNames.push_back(temp.GetIDBuffer());
 		}//End for
 		static int templateIndex = -1;
+
+		//Dropdown/button combo which selects and adds template at the same time
 		if(nk_combo_begin_label(nuklearContext, "Add Template To Group", nk_vec2(300, 300)))
 		{
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
 
+			//Render every button of templates to add
 			for(int i = 0; i < templateNames.size(); i++)
 			{
 				if(nk_button_label(nuklearContext, templateNames.at(i))) { templateIndex = i; break; }
@@ -163,6 +179,7 @@ private:
 				nk_combo_close(nuklearContext);
 				nk_style_pop_float(nuklearContext);
 				nk_style_pop_vec2(nuklearContext);
+				nk_combo_end(nuklearContext);
 				value = true;
 				return true;
 			}//End if
@@ -191,6 +208,8 @@ private:
 				CreateNewWindow("Member Window", MEMBER_WINDOW);
 
 			//Group Button
+			if(nk_button_label(nuklearContext, "Open New Group Window"))
+				CreateNewWindow("Group Window", GROUP_WINDOW);
 		}//End if
 		#pragma endregion
 
@@ -562,6 +581,7 @@ private:
 				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
 			{
+
 				//Render Header
 				if(nuklearWindow->GetHasHeader())
 				{
@@ -577,10 +597,9 @@ private:
 					if(!RenderWindowFooter(nuklearContext, windowData)) return false;
 				}//End if
 			}//End nk_begin
-			nk_end(nuklearContext);
 
 			//After data processing, check if the window is closed
-			if(nk_window_is_closed(nuklearContext, id.c_str()))
+			if(nk_window_is_closed(nuklearContext, id.c_str()) || nk_window_is_hidden(nuklearContext, id.c_str()))
 			{
 				//Check if the window's data is a valid member
 				if(const auto memberData = dynamic_pointer_cast<Member>(windowData); memberData != nullptr)
@@ -590,40 +609,45 @@ private:
 					{
 						//Remove the empty item from the data manager to not clog up the system with blank members
 						dataManager_->RemoveInstanceFromDataMap(*memberData);
-						//Remove the member window from the active window list
-						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-						return false;
 					}//End if
+					//Remove the member window from the active window list
+					activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+					nk_end(nuklearContext);
+					return false;
 				}//End if
 
 				//Check if the window's data is a valid template
-				else if(const auto templateData = dynamic_pointer_cast<Template>(windowData); templateData != nullptr)
+				if(const auto templateData = dynamic_pointer_cast<Template>(windowData); templateData != nullptr)
 				{
 					//If the data is empty
 					if(templateData->IsEmpty())
 					{
 						//Remove the empty item from the data manager to not clog up the system with blank templates
 						dataManager_->RemoveInstanceFromDataMap(*templateData);
-						//Remove the template window from the active window list
-						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-						return false;
 					}//End if
-				}//End else if
+					//Remove the template window from the active window list
+					activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+					nk_end(nuklearContext);
+					return false;
+				}//End if
 
 				//Check if the window's data is a valid template
-				else if(const auto groupData = dynamic_pointer_cast<Group>(windowData); groupData != nullptr)
+				if(const auto groupData = dynamic_pointer_cast<Group>(windowData); groupData != nullptr)
 				{
 					//If the data is empty
 					if(groupData->IsEmpty())
 					{
 						//Remove the empty item from the data manager to not clog up the system with blank templates
 						dataManager_->RemoveInstanceFromDataMap(*groupData);
-						//Remove the template window from the active window list
-						activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-						return false;
 					}//End if
-				}//End else if
+					//Remove the template window from the active window list
+					activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+					nk_end(nuklearContext);
+					return false;
+				}//End if
 			}//End if
+
+			nk_end(nuklearContext);
 		}//End if
 
 		//Landing window has no data, as it is essentially just buttons to open subwindows
