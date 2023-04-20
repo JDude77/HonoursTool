@@ -1,7 +1,9 @@
 #pragma once
 #ifndef DATA_INTERFACES
 #define DATA_INTERFACES
+#include <memory>
 #include <string>
+#include "../../RapidJSON/document.h"
 class PrimaryData;
 using std::string;
 
@@ -34,6 +36,7 @@ class IExport
 	public:
 	//Caller pointer determines whether the JSON should be part of a larger JSON file (has caller) or an individual one (null pointer)
 	virtual int Export(PrimaryData* caller = nullptr) = 0;
+	virtual int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) = 0;
 };
 
 class PrimaryData : ISave, ILoad, IExport, IDelete
@@ -44,6 +47,7 @@ public:
 	virtual int Load() override = 0;
 	virtual int Delete() override = 0;
 	virtual int Export(PrimaryData* caller = nullptr) override = 0;
+	virtual int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override = 0;
 
 	char* GetNameBuffer() { return nameBuffer_; }
 	char* GetIDBuffer() { return idBuffer_; }

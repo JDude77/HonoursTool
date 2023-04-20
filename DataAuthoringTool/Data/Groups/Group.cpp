@@ -1,7 +1,9 @@
 #include "Group.h"
-
 #include "../Members/Member.h"
 #include "../Templates/Template.h"
+#include "../../RapidJSON/filewritestream.h"
+#include "../../RapidJSON/writer.h"
+using namespace rapidjson;
 
 int Group::Save()
 {
@@ -34,11 +36,48 @@ int Group::Delete()
 int Group::Export(PrimaryData* caller)
 {
 	//TODO: Group Export functionality
+	//Create the document which all members will be added to
+	shared_ptr<Document> jsonDocument = std::make_shared<Document>();
+	jsonDocument->SetObject();
+	Document::AllocatorType& jsonDocAlloc = jsonDocument->GetAllocator();
+
+	//Get group name and put it in the doc
+	Value nameValue;
+	nameValue.SetString(GenericValue<UTF8<>>::StringRefType(GetNameBuffer()));
+	jsonDocument->AddMember("Name", nameValue, jsonDocAlloc);
+
+	//Loop through every member
 	for(const auto& member : members_ | std::views::values)
 	{
-		member->Export(this);
+		//Add the member to the document object
+		member->Export(this, jsonDocument);
 	}//End for
-	return 1;
+
+	//By here we're ready to just export a JSON document as per usual
+	{
+		//Construct file name
+		string fileName;
+		fileName.append(idBuffer_);
+		fileName.append(".json");
+
+		//Set up buffer/stream/file
+		FILE* filePath = fopen(fileName.c_str(), "wb");
+		char writeBuffer[65536];
+		FileWriteStream stream(filePath, writeBuffer, sizeof writeBuffer);
+
+		//Write to file
+		Writer writer(stream);
+		jsonDocument->Accept(writer);
+
+		//Close file
+		return fclose(filePath);
+	}//End Exporting functionality
+}//End Export
+
+int Group::Export(PrimaryData* caller, std::shared_ptr<Document> jsonDocument)
+{
+	//Nothing to do here for now - this version is mainly just used for calling on members/templates in groups
+	return -1;
 }//End Export
 
 vector<shared_ptr<Member>> Group::GetMembers()

@@ -1,6 +1,5 @@
 #include "Template.h"
 
-#include "../../RapidJSON/document.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/writer.h"
 using namespace rapidjson;
@@ -180,6 +179,12 @@ int Template::Export(PrimaryData* caller)
 	}//End Exporting functionality
 }//End Export (Template)
 
+//Export call for adding a template to a group
+int Template::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+{
+	return 1;
+}//End Export
+
 int Template::Delete()
 {
 	//TODO: Template Delete functionality
@@ -199,10 +204,10 @@ int Template::AddNewField()
 
 int Template::DeleteField(const TemplateField* field)
 {
-	if(const auto position = std::find(fields_.begin(), fields_.end(), *field); position != fields_.end())
+	if(const auto position = std::ranges::find(fields_, *field); position != fields_.end())
 	{
 		fields_.erase(position);
 		return 1;
 	}//End if
 	return 0;
-}
+}//End DeleteField

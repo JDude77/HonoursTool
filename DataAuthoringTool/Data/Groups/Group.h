@@ -29,6 +29,7 @@ public:
 	int Validate() override;
 	int Delete() override;
 	int Export(PrimaryData* caller = nullptr) override;
+	int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
 	[[nodiscard]] bool IsEmpty() const override {  return PrimaryData::IsEmpty() && members_.empty() && templates_.empty(); }
 
 	[[nodiscard]] int GetNumberOfTemplates() const { return templates_.size(); }

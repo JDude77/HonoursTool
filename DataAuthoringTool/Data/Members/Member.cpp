@@ -1,7 +1,6 @@
 #include "Member.h"
 
 #include "../Templates/Template.h"
-#include "../../RapidJSON/document.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/writer.h"
 using namespace rapidjson;
@@ -100,6 +99,104 @@ int Member::Export(PrimaryData* caller)
 		//Close file
 		return fclose(filePath);
 	}//End Exporting functionality
+}//End Export
+
+//Export call for adding a member to a group JSON file
+int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+{
+	//Get reference to the allocator for adding new objects
+	Document::AllocatorType& allocator = jsonDocument->GetAllocator();
+
+	//Create potential new array value here to prevent premature garbage collection
+	Value memberArray(kArrayType);
+
+	//Check to see if a member of this type already exists in the document
+	if(jsonDocument->HasMember(GetType()->GetNameBuffer()))
+	{
+		//Create array of members of this type
+		const Value::MemberIterator it = jsonDocument->FindMember(GetType()->GetNameBuffer());
+		memberArray = it->value;
+		jsonDocument->RemoveMember(GetType()->GetNameBuffer());
+	}//End if
+
+	//Construct JSON object of member
+	Value memberObject(kObjectType);
+
+	Value nameValue;
+	nameValue.SetString(GenericValue<UTF8<>>::StringRefType(GetNameBuffer()));
+	memberObject.AddMember("Name", nameValue, allocator);
+
+	Value fieldArray(kArrayType);
+	
+	for (const MemberField& field : fields_)
+	{
+		auto name = GenericValue<UTF8<>>::StringRefType(field.GetName());
+
+		Value fieldValue(kObjectType);
+
+		//Correctly grab the data in a JSON value for each type
+		switch(field.GetDataType())
+		{
+			case DataType::STRING:
+			{
+				Value stringVal;
+				stringVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
+				fieldValue.AddMember(name, stringVal, allocator);
+			}//End String data handling
+			break;
+
+			case DataType::INTEGER:
+			{
+				Value integerVal;
+				int data = strtol(field.GetDataBuffer(), nullptr, 0);
+				integerVal.SetInt(data);
+				fieldValue.AddMember(name, integerVal, allocator);
+			}//End Integer data handling
+			break;
+
+			case DataType::FLOAT:
+			{
+				Value floatVal;
+				float data = strtof(field.GetDataBuffer(), nullptr);
+				floatVal.SetFloat(data);
+				fieldValue.AddMember(name, floatVal, allocator);
+			}//End Float data handling
+			break;
+
+			case DataType::CHAR:
+			{
+				Value charVal;
+				charVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
+				fieldValue.AddMember(name, charVal, allocator);
+			}//End Char data handling
+			break;
+
+			case DataType::BOOLEAN:
+			{
+				Value booleanVal;
+				auto check = *field.GetBooleanData();
+				booleanVal.SetBool(check);
+				fieldValue.AddMember(name, booleanVal, allocator);
+			}//End Boolean data handling
+			break;
+
+			default: break;
+		}//End switch
+
+		//Add field into field array
+		fieldArray.PushBack(fieldValue, allocator);
+	}//End for
+
+	//Add constructed field array to member object
+	memberObject.AddMember("Fields", fieldArray, allocator);
+
+	//Add this member on to the array
+	memberArray.PushBack(memberObject, allocator);
+
+	//Add the array back into the JSON document
+	jsonDocument->AddMember(GenericValue<UTF8<>>::StringRefType(GetType()->GetNameBuffer()), memberArray, allocator);
+
+	return jsonDocument->HasMember(GetType()->GetNameBuffer());
 }//End Export
 
 int Member::Delete()
