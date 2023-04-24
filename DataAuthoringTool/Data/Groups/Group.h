@@ -36,6 +36,8 @@ public:
 	[[nodiscard]] int GetNumberOfMembers() const { return members_.size(); }
 	vector<shared_ptr<Member>> GetMembers();
 	vector<shared_ptr<Template>> GetTemplates();
+	int* GetActiveTemplateTab(){ return &activeTemplateTab_; }
+	void SetActiveTemplateTab(const int tabNumber){ activeTemplateTab_ = tabNumber; }
 
 	int AddTemplateToGroup(const shared_ptr<Template>& newTemplate);
 	int AddMemberToGroup(const shared_ptr<Member>& newMember);
@@ -48,5 +50,7 @@ private:
 	vector<pair<string, shared_ptr<Member>>> members_;
 	//String: Template ID, Shared Pointer: Template pointer to be re-retrieved using the ID if memory location changes
 	vector<pair<string, shared_ptr<Template>>> templates_;
+	//Which tab was last active
+	int activeTemplateTab_ = -1;
 };
 #endif

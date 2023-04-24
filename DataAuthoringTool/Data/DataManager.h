@@ -19,13 +19,13 @@ using std::vector;
 class DataManager
 {
 	//String: Template's ID
-	map<string, Template> templates_;
+	map<string, shared_ptr<Template>> templates_;
 	int numberOfTemplates_ = 0;
 	//String: Member's ID
-	map<string, Member> members_;
+	map<string, shared_ptr<Member>> members_;
 	int numberOfMembers_ = 0;
 	//String: Group's ID
-	map<string, Group> groups_;
+	map<string, shared_ptr<Group>> groups_;
 	int numberOfGroups_ = 0;
 	inline static int internalIDCounter_ = -1;
 
@@ -35,9 +35,9 @@ class DataManager
 public:
 	DataManager();
 
-	vector<Member> GetAllMembers();
-	vector<Template> GetAllTemplates();
-	vector<Group> GetAllGroups();
+	vector<shared_ptr<Member>> GetAllMembers();
+	vector<shared_ptr<Template>> GetAllTemplates();
+	vector<shared_ptr<Group>> GetAllGroups();
 	
 	void AddInstanceToDataMap(Member instance);
 	void AddInstanceToDataMap(Template instance);
@@ -47,9 +47,9 @@ public:
 	void RemoveInstanceFromDataMap(Template instance);
 	void RemoveInstanceFromDataMap(Group instance);
 
-	void UpdateInstance(Member* instance);
-	void UpdateInstance(Template* instance);
-	void UpdateInstance(Group* instance);
+	void UpdateInstance(const shared_ptr<Member>& instance);
+	void UpdateInstance(const shared_ptr<Template>& instance);
+	void UpdateInstance(const shared_ptr<Group>& instance);
 
 	static int GetInternalID(bool incrementAfter);
 };

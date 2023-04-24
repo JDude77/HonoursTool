@@ -8,9 +8,9 @@ DataManager::DataManager()
 	AddInstanceToDataMap(Template("None", GetInternalID(true)));
 }//End constructor
 
-vector<Member> DataManager::GetAllMembers()
+vector<shared_ptr<Member>> DataManager::GetAllMembers()
 {
-	vector<Member> members;
+	vector<shared_ptr<Member>> members;
 	for (const auto& member : members_ | std::views::values)
 	{
 		members.push_back(member);
@@ -19,9 +19,9 @@ vector<Member> DataManager::GetAllMembers()
 	return members;
 }//End GetAllMembers
 
-vector<Template> DataManager::GetAllTemplates()
+vector<shared_ptr<Template>> DataManager::GetAllTemplates()
 {
-	vector<Template> templates;
+	vector<shared_ptr<Template>> templates;
 	for (const auto& temp : templates_ | std::views::values)
 	{
 		templates.push_back(temp);
@@ -30,7 +30,7 @@ vector<Template> DataManager::GetAllTemplates()
 	//Push the empty "NONE" template to the first slot
 	for (auto it = templates.begin(); it != templates.end(); ++it)
 	{
-		if(it->GetInternalID() == -1)
+		if(it->get()->GetInternalID() == -1)
 		{
 			std::ranges::rotate(templates, it);
 			break;
@@ -40,9 +40,9 @@ vector<Template> DataManager::GetAllTemplates()
 	return templates;
 }//End GetAllTemplates
 
-vector<Group> DataManager::GetAllGroups()
+vector<shared_ptr<Group>> DataManager::GetAllGroups()
 {
-	vector<Group> groups;
+	vector<shared_ptr<Group>> groups;
 	for (const auto& group : groups_ | std::views::values)
 	{
 		groups.push_back(group);
@@ -55,7 +55,7 @@ void DataManager::AddInstanceToDataMap(Member instance)
 {
 	string id;
 	id.append(instance.GetIDBuffer());
-	members_.insert({id, instance});
+	members_.insert({id, std::make_shared<Member>(instance)});
 	++numberOfMembers_;
 }//End AddInstanceToDataMap (Member)
 
@@ -63,7 +63,7 @@ void DataManager::AddInstanceToDataMap(Template instance)
 {
 	string id;
 	id.append(instance.GetIDBuffer());
-	templates_.insert({id, instance});
+	templates_.insert({id, std::make_shared<Template>(instance)});
 	++numberOfTemplates_;
 }//End AddInstanceToDataMap (Template)
 
@@ -71,7 +71,7 @@ void DataManager::AddInstanceToDataMap(Group instance)
 {
 	string id;
 	id.append(instance.GetIDBuffer());
-	groups_.insert({id, instance});
+	groups_.insert({id, std::make_shared<Group>(instance)});
 	++numberOfGroups_;
 }//End AddInstanceToDataMap (Group)
 
@@ -99,63 +99,63 @@ void DataManager::RemoveInstanceFromDataMap(Group instance)
 	groups_.erase(iterator);
 }//End RemoveInstanceFromDataMap (Group)
 
-void DataManager::UpdateInstance(Member* instance)
+void DataManager::UpdateInstance(const shared_ptr<Member>& instance)
 {
 	if(members_.contains(instance->GetIDBuffer()))
 	{
-		members_[instance->GetIDBuffer()] = *instance;
+		members_[instance->GetIDBuffer()] = instance;
 	}//End if
 	else
 	{
 		for (auto i = members_.begin(); i != members_.end(); ++i)
 		{
-			if(i->second.GetInternalID() == instance->GetInternalID())
+			if(i->second->GetInternalID() == instance->GetInternalID())
 			{
 				members_.erase(i);
 				break;
 			}//End if
 		}//End for
-		members_.insert({instance->GetIDBuffer(), *instance});
+		members_.insert({instance->GetIDBuffer(), instance});
 	}//End else
 }//End UpdateInstance (Member)
 
-void DataManager::UpdateInstance(Template* instance)
+void DataManager::UpdateInstance(const shared_ptr<Template>& instance)
 {
 	if(templates_.contains(instance->GetIDBuffer()))
 	{
-		templates_[instance->GetIDBuffer()] = *instance;
+		templates_[instance->GetIDBuffer()] = instance;
 	}//End if
 	else
 	{
 		for (auto i = templates_.begin(); i != templates_.end(); ++i)
 		{
-			if(i->second.GetInternalID() == instance->GetInternalID())
+			if(i->second->GetInternalID() == instance->GetInternalID())
 			{
 				templates_.erase(i);
 				break;
 			}//End if
 		}//End for
-		templates_.insert({instance->GetIDBuffer(), *instance});
+		templates_.insert({instance->GetIDBuffer(), instance});
 	}//End else
 }//End UpdateInstance (Template)
 
-void DataManager::UpdateInstance(Group* instance)
+void DataManager::UpdateInstance(const shared_ptr<Group>& instance)
 {
 	if(groups_.contains(instance->GetIDBuffer()))
 	{
-		groups_[instance->GetIDBuffer()] = *instance;
+		groups_[instance->GetIDBuffer()] = instance;
 	}//End if
 	else
 	{
 		for (auto i = groups_.begin(); i != groups_.end(); ++i)
 		{
-			if(i->second.GetInternalID() == instance->GetInternalID())
+			if(i->second->GetInternalID() == instance->GetInternalID())
 			{
 				groups_.erase(i);
 				break;
 			}//End if
 		}//End for
-		groups_.insert({instance->GetIDBuffer(), *instance});
+		groups_.insert({instance->GetIDBuffer(), instance});
 	}//End else
 }//End UpdateInstance (Group)
 

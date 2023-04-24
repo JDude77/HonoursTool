@@ -47,9 +47,9 @@ Renderer::~Renderer()
 	UnregisterClassW(windowClass_.lpszClassName, windowClass_.hInstance);
 }//End Renderer Destructor
 
-int Renderer::Update()
+int Renderer::Update() const
 {
-	int running = ProcessUserInput();
+	const int running = ProcessUserInput();
 
 	/////////////////////////////////
 	//Process things to render here//
@@ -136,7 +136,7 @@ void Renderer::InitWindow(const std::string& windowName, const int windowWidth, 
 	                       nullptr, nullptr, windowClass_.hInstance, nullptr);
 }//End InitWindow
 
-int Renderer::ProcessUserInput()
+int Renderer::ProcessUserInput() const
 {
 	int stillRunning = 1;
 	MSG message;
@@ -156,7 +156,7 @@ int Renderer::ProcessUserInput()
 	return stillRunning;
 }//End ProcessUserInput
 
-void Renderer::DrawGUI()
+void Renderer::DrawGUI() const
 {
 	context->ClearRenderTargetView(renderTargetView, &backgroundColour_->r);
 	context->OMSetRenderTargets(1, &renderTargetView, nullptr);

@@ -42,14 +42,14 @@ private:
 	void InitNuklear(int windowWidth, int windowHeight, const std::string& fontName = "", int fontSize = 12);
 	void InitD3D11(int windowWidth, int windowHeight);
 	void InitWindow(const std::string& windowName, int windowWidth, int windowHeight);
-	int ProcessUserInput();
-	void DrawGUI();
+	[[nodiscard]] int ProcessUserInput() const;
+	void DrawGUI() const;
 
 public:
 	Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, std::shared_ptr<DataManager> dataManager, const std::string& fontName = "", const int fontSize = 12);
 	~Renderer();
 
-	int Update();
+	[[nodiscard]] int Update() const;
 #pragma endregion
 };
 #endif
