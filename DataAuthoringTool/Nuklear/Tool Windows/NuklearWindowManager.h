@@ -28,6 +28,9 @@ private:
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
 
+	shared_ptr<float> windowWidth_ = make_shared<float>(0.0f);
+	shared_ptr<float> windowHeight_ = make_shared<float>(0.0f);
+
 	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData)
 	{
 		//Update cached templates
@@ -223,19 +226,88 @@ private:
 		//LANDING
 		if (windowData == nullptr)
 		{
-			nk_layout_row_dynamic(nuklearContext, 64, 1);
-
 			//Template Button
-			if (nk_button_label(nuklearContext, "Open New Template Window"))
-				CreateNewWindow("Template Window", TEMPLATE_WINDOW);
+			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
+				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
+					if (nk_button_label(nuklearContext, "Open New Template Window"))
+						CreateNewWindow("Template Window", TEMPLATE_WINDOW);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
+					nk_label(nuklearContext, "Templates", NK_TEXT_LEFT);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
+					nk_label_wrap(nuklearContext, "The blueprints you can use to define Member types, as well as set up validation rules.");
+			nk_layout_space_end(nuklearContext);
 
 			//Member Button
-			if (nk_button_label(nuklearContext, "Open New Member Window"))
-				CreateNewWindow("Member Window", MEMBER_WINDOW);
+			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
+				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
+					if (nk_button_label(nuklearContext, "Open New Member Window"))
+						CreateNewWindow("Member Window", MEMBER_WINDOW);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
+					nk_label(nuklearContext, "Members", NK_TEXT_LEFT);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
+					nk_label_wrap(nuklearContext, "The objects you can create, using a Template as the guide for how everything is laid out and validated.");
+			nk_layout_space_end(nuklearContext);
 
-			//Group Button
-			if (nk_button_label(nuklearContext, "Open New Group Window"))
-				CreateNewWindow("Group Window", GROUP_WINDOW);
+			//Template Button
+			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
+				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
+					if (nk_button_label(nuklearContext, "Open New Group Window"))
+						CreateNewWindow("Group Window", GROUP_WINDOW);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
+					nk_label(nuklearContext, "Groups", NK_TEXT_LEFT);
+				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
+					nk_label_wrap(nuklearContext, "Allows you to create collections of Members and Templates, for quick validation and export.");
+			nk_layout_space_end(nuklearContext);
+
+			//List Of All Data
+			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 2.75f, INT_MAX);
+
+				//List Of All Templates
+				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.0f, 0.3f, 1.0f));
+					if(nk_group_begin(nuklearContext, "All Templates", NK_WINDOW_TITLE | NK_WINDOW_BORDER))
+					{
+						nk_layout_row_dynamic(nuklearContext, 24, 1);
+						for (const auto templates = dataManager_->GetAllTemplates(); const auto& templateData : templates)
+						{
+							//Don't allow the user to open the "None" template placeholder
+							if(templateData->GetInternalID() == -1) continue;
+
+							//Button for each other Template
+							if(nk_button_label(nuklearContext, templateData->GetIDBuffer()))
+								CreateNewWindow("Template Window", TEMPLATE_WINDOW, templateData, nuklearContext);
+						}//End for
+						nk_group_end(nuklearContext);
+					}//End if
+
+				//List Of All Members
+				nk_layout_space_push(nuklearContext, nk_rect(0.333f, 0.0f, 0.3f, 1.0f));
+					if(nk_group_begin(nuklearContext, "All Members", NK_WINDOW_TITLE | NK_WINDOW_BORDER))
+					{
+						nk_layout_row_dynamic(nuklearContext, 24, 1);
+						for (const auto members = dataManager_->GetAllMembers(); const auto& memberData : members)
+						{
+							//Button for each other Member
+							if(nk_button_label(nuklearContext, memberData->GetIDBuffer()))
+								CreateNewWindow("Member Window", MEMBER_WINDOW, memberData, nuklearContext);
+						}//End for
+						nk_group_end(nuklearContext);
+					}//End if
+
+				//List Of All Groups
+				nk_layout_space_push(nuklearContext, nk_rect(0.667f, 0.0f, 0.3f, 1.0f));
+					if(nk_group_begin(nuklearContext, "All Groups", NK_WINDOW_TITLE | NK_WINDOW_BORDER))
+					{
+						nk_layout_row_dynamic(nuklearContext, 24, 1);
+						for (const auto groups = dataManager_->GetAllGroups(); const auto& groupData : groups)
+						{
+							//Button for each other Member
+							if(nk_button_label(nuklearContext, groupData->GetIDBuffer()))
+								CreateNewWindow("Group Window", GROUP_WINDOW, groupData, nuklearContext);
+						}//End for
+						nk_group_end(nuklearContext);
+					}//End if
+
+			nk_layout_space_end(nuklearContext);
 		}//End if
 #pragma endregion
 
@@ -696,15 +768,12 @@ private:
 		//Landing window has no data, as it is essentially just buttons to open subwindows
 		else if (nuklearWindow->GetWindowType() == LANDING)
 		{
-			if (nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, 500, 500),
-				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+			if (nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, *windowWidth_, *windowHeight_), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
 			{
 				if (!RenderWindowBody(nuklearContext, nullptr)) return false;
 			}//End nk_begin
 			nk_end(nuklearContext);
 		}//End else if
-
 
 		return true;
 	}//End RenderWindow
@@ -719,10 +788,11 @@ public:
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
 	{
 		const int startCount = activeNuklearWindows_.size();
+		const NuklearWindow* frontWindow = activeNuklearWindows_.back();
 		for (NuklearWindow* window : activeNuklearWindows_)
 		{
 			if (const bool success = RenderWindow(nuklearContext, window); !success) return false;
-			if (activeNuklearWindows_.size() != startCount) return true;
+			if (activeNuklearWindows_.size() != startCount || frontWindow != activeNuklearWindows_.back()) return true;
 		}//End for
 		return true;
 	}//End RenderAllActiveWindows
@@ -789,5 +859,33 @@ public:
 
 		return true;
 	}//End CreateNewWindow
+
+	bool CreateNewWindow(const char* windowTitle, const WINDOW_TYPE windowType, const shared_ptr<PrimaryData>& windowData, nk_context* nuklearContext)
+	{
+		if(windowData->GetInternalID() == -1) return false;
+
+		for (auto it = activeNuklearWindows_.begin(); it != activeNuklearWindows_.end(); ++it)
+		{
+			if((*it)->GetWindowType() != LANDING && (*it)->GetWindowTitle() == windowTitle && (*it)->GetWindowData() == windowData)
+			{
+				//Move the window to render on top
+				string id;
+				id.append((*it)->GetWindowTitle());
+				const auto internalID = std::to_string((*it)->GetWindowData()->GetInternalID());
+				id.append(internalID);
+				nk_window_set_focus(nuklearContext, id.c_str());
+				return true;
+			}//End if
+		}//End for
+
+		activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, windowData, windowTitle));
+		return true;
+	}//End CreateNewWindow
+
+	void UpdateWindowSize(const long windowWidth, const long windowHeight) const
+	{
+		*windowWidth_ = windowWidth;
+		*windowHeight_ = windowHeight;
+	}//End UpdateWindowSize
 };
 #endif

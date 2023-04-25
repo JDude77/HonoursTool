@@ -31,6 +31,10 @@ private:
 	D3D_FEATURE_LEVEL featureLevel_;
 
 	NuklearWindowManager* nuklearWindowManager_;
+
+	inline static std::unique_ptr<long> windowWidth_ = std::make_unique<long>();
+	inline static std::unique_ptr<long> windowHeight_ = std::make_unique<long>();
+
 public:
 
 #pragma endregion

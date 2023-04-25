@@ -50,6 +50,8 @@ Renderer::~Renderer()
 int Renderer::Update() const
 {
 	const int running = ProcessUserInput();
+	
+	nuklearWindowManager_->UpdateWindowSize(*windowWidth_, *windowHeight_);
 
 	/////////////////////////////////
 	//Process things to render here//
@@ -117,6 +119,9 @@ void Renderer::InitD3D11(const int windowWidth, const int windowHeight)
 void Renderer::InitWindow(const std::string& windowName, const int windowWidth, const int windowHeight)
 {
 	windowRect_ = { 0, 0, windowWidth, windowHeight };
+
+	*windowWidth_ = windowWidth;
+	*windowHeight_ = windowHeight;
 
 	memset(&windowClass_, 0, sizeof(windowClass_));
 	windowClass_.style = CS_DBLCLKS;
@@ -218,6 +223,8 @@ LRESULT Renderer::WindowProc(const HWND hwnd, const UINT message, const WPARAM w
 				const int height = HIWORD(lparam);
 				SetSwapChainSize(width, height);
 				nk_d3d11_resize(context, width, height);
+				*windowWidth_ = width;
+				*windowHeight_ = height;
 			}//End if
 			break;
 

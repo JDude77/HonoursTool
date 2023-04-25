@@ -32,7 +32,7 @@ vector<shared_ptr<Template>> DataManager::GetAllTemplates()
 	{
 		if(it->get()->GetInternalID() == -1)
 		{
-			std::ranges::rotate(templates, it);
+			std::ranges::rotate(it, it + 1, templates.end());
 			break;
 		}//End if
 	}//End for
