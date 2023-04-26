@@ -44,6 +44,7 @@ class NuklearWindowManager
 private:
 	inline static shared_ptr<vector<shared_ptr<Template>>> cachedTemplates_;
 
+	string lastWindowBeforeRefresh_;
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
 	map<BUTTON_STYLE, nk_style_button> buttonStyleMap_;
@@ -485,7 +486,6 @@ private:
 		if (!groupData->GetTemplates().empty())
 		{
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
-			//Get only members which aren't considered empty
 			static vector<shared_ptr<Member>> addableMembers;
 			for (shared_ptr<Member>& member : dataManager_->GetAllMembers())
 			{
@@ -522,7 +522,7 @@ private:
 					nk_layout_row_dynamic(nuklearContext, 24, 1);
 
 					//Add a button for each addable member
-					for (auto& member : allMembersOfTemplateNotAlreadyInGroup)
+					for (const auto& member : allMembersOfTemplateNotAlreadyInGroup)
 					{
 						string fullNameOfMember;
 						fullNameOfMember.append(member->GetNameBuffer());
@@ -531,13 +531,15 @@ private:
 						fullNameOfMember.append(")");
 
 						//Button in the dropdown to allow adding the member to the group
+
 						if (nk_button_label(nuklearContext, fullNameOfMember.c_str()))
 						{
 							groupData->AddMemberToGroup(member);
 							//Force refresh of addable members of type
+							nk_combo_close(nuklearContext);
+							nk_combo_end(nuklearContext);
 							allMembersOfTemplateNotAlreadyInGroup.erase(allMembersOfTemplateNotAlreadyInGroup.begin(), allMembersOfTemplateNotAlreadyInGroup.end());
 							addableMembers.erase(addableMembers.begin(), addableMembers.end());
-							nk_combo_close(nuklearContext);
 							value = true;
 							return true;
 						}//End if
@@ -834,7 +836,7 @@ private:
 
 		return true;
 	}//End RenderWindowHeader
-	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
+	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* currentWindow)
 	{
 		//LANDING
 		if (windowData == nullptr)
@@ -851,7 +853,15 @@ private:
 		//GROUP
 		else if (const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
-			if (bool value; RenderGroupBody(nuklearContext, groupData, value)) return value;
+			if (bool value; RenderGroupBody(nuklearContext, groupData, value))
+			{
+				lastWindowBeforeRefresh_.clear();
+				lastWindowBeforeRefresh_.append(currentWindow->GetWindowTitle());
+				const auto internalID = std::to_string(groupData->GetInternalID());
+				lastWindowBeforeRefresh_.append(internalID);
+
+				return value;
+			}//End if
 		}//End else if
 		
 		//TEMPLATE
@@ -879,6 +889,58 @@ private:
 
 		return true;
 	}//End RenderWindowFooter
+
+	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
+	{
+		if (const shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData(); windowData != nullptr)
+		{
+			string id;
+			id.append(nuklearWindow->GetWindowTitle());
+			id.append(std::to_string(nuklearWindow->GetWindowData()->GetInternalID()));
+			if (nk_begin_titled(nuklearContext, id.c_str(), nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 600, 400),
+				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
+			{
+				//If the window was refreshed (a group window, usually), re-set it to be the focus window
+				if(lastWindowBeforeRefresh_ == id)
+				{
+					nk_window_set_focus(nuklearContext, id.c_str());
+					lastWindowBeforeRefresh_.clear();
+				}//End if
+
+				//Render Header
+				if (nuklearWindow->GetHasHeader())
+				{
+					if (!RenderWindowHeader(nuklearContext, windowData)) return false;
+				}//End if
+
+				//Render Body
+				if (!RenderWindowBody(nuklearContext, windowData, nuklearWindow)) return false;
+
+				//Render Footer
+				if (nuklearWindow->GetHasFooter())
+				{
+					if (!RenderWindowFooter(nuklearContext, windowData)) return false;
+				}//End if
+			}//End nk_begin
+
+			if (bool value; DeleteEmptyDataEntriesFromDataManager(nuklearContext, nuklearWindow, windowData, id, value)) return value;
+
+			nk_end(nuklearContext);
+		}//End if
+
+		//Landing window has no data, as it is essentially just buttons to open subwindows
+		else if (nuklearWindow->GetWindowType() == LANDING)
+		{
+			if (nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, *windowWidth_, *windowHeight_), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
+			{
+				if (!RenderWindowBody(nuklearContext, nullptr, nuklearWindow)) return false;
+			}//End nk_begin
+			nk_end(nuklearContext);
+		}//End else if
+
+		return true;
+	}//End RenderWindow
 
 	bool DeleteEmptyDataEntriesFromDataManager(nk_context* nuklearContext, NuklearWindow* nuklearWindow, const shared_ptr<PrimaryData> windowData, string id, bool& value)
 	{
@@ -935,51 +997,6 @@ private:
 		}//End if
 		return false;
 	}//End DeleteEmptyDataEntriesFromDataManager
-
-	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
-	{
-		if (const shared_ptr<PrimaryData> windowData = nuklearWindow->GetWindowData(); windowData != nullptr)
-		{
-			string id;
-			id.append(nuklearWindow->GetWindowTitle());
-			id.append(std::to_string(nuklearWindow->GetWindowData()->GetInternalID()));
-			if (nk_begin_titled(nuklearContext, id.c_str(), nuklearWindow->GetWindowTitle(), nk_rect(25, 50, 600, 400),
-				NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-				NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE | NK_WINDOW_CLOSABLE))
-			{
-				//Render Header
-				if (nuklearWindow->GetHasHeader())
-				{
-					if (!RenderWindowHeader(nuklearContext, windowData)) return false;
-				}//End if
-
-				//Render Body
-				if (!RenderWindowBody(nuklearContext, windowData)) return false;
-
-				//Render Footer
-				if (nuklearWindow->GetHasFooter())
-				{
-					if (!RenderWindowFooter(nuklearContext, windowData)) return false;
-				}//End if
-			}//End nk_begin
-
-			if (bool value; DeleteEmptyDataEntriesFromDataManager(nuklearContext, nuklearWindow, windowData, id, value)) return value;
-
-			nk_end(nuklearContext);
-		}//End if
-
-		//Landing window has no data, as it is essentially just buttons to open subwindows
-		else if (nuklearWindow->GetWindowType() == LANDING)
-		{
-			if (nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, *windowWidth_, *windowHeight_), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
-			{
-				if (!RenderWindowBody(nuklearContext, nullptr)) return false;
-			}//End nk_begin
-			nk_end(nuklearContext);
-		}//End else if
-
-		return true;
-	}//End RenderWindow
 
 public:
 	NuklearWindowManager(shared_ptr<DataManager> dataManager, const nk_context* nuklearContext) : dataManager_(std::move(dataManager))

@@ -2,7 +2,7 @@
 #include "../Members/Member.h"
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
-#include "../../RapidJSON/writer.h"
+#include "../../RapidJSON/prettywriter.h"
 using namespace rapidjson;
 
 int Group::Save()
@@ -66,7 +66,7 @@ int Group::Export(PrimaryData* caller)
 		FileWriteStream stream(filePath, writeBuffer, sizeof writeBuffer);
 
 		//Write to file
-		Writer writer(stream);
+		PrettyWriter writer(stream);
 		jsonDocument->Accept(writer);
 
 		//Close file
