@@ -33,7 +33,7 @@ Renderer::Renderer(const std::string& windowName, const int windowWidth, const i
 	
 	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
 
-	nuklearWindowManager_ = new NuklearWindowManager(std::move(dataManager));
+	nuklearWindowManager_ = new NuklearWindowManager(std::move(dataManager), nuklearContext_);
 }//End Renderer Constructor
 
 Renderer::~Renderer()

@@ -20,6 +20,16 @@ using std::vector;
 using std::dynamic_pointer_cast;
 using std::make_shared;
 
+enum struct BUTTON_STYLE
+{
+	OPEN_TEMPLATE_WINDOW_BUTTON,
+	OPEN_MEMBER_WINDOW_BUTTON,
+	OPEN_GROUP_WINDOW_BUTTON,
+	VALIDATE_BUTTON,
+	DELETE_BUTTON,
+	ADD_BUTTON,
+};
+
 class NuklearWindowManager
 {
 private:
@@ -27,6 +37,9 @@ private:
 
 	shared_ptr<DataManager> dataManager_;
 	vector<NuklearWindow*> activeNuklearWindows_;
+	map<BUTTON_STYLE, nk_style_button> buttonStyleMap_;
+	nk_style_combo addComboStyle_;
+	nk_style_combo defaultComboStyle_;
 
 	shared_ptr<float> windowWidth_ = make_shared<float>(0.0f);
 	shared_ptr<float> windowHeight_ = make_shared<float>(0.0f);
@@ -73,7 +86,7 @@ private:
 			nk_layout_row_dynamic(nuklearContext, 24, 2);
 			RenderTemplateHeaderDropdown(nuklearContext, memberData);
 			//Validate All Fields button
-			if (nk_button_label(nuklearContext, "VALIDATE ALL")) memberData->Validate();
+			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE ALL")) memberData->Validate();
 		}//End if
 
 		//If the data we're handling is a group
@@ -81,7 +94,7 @@ private:
 		{
 			//Validate All Members button
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
-			if (nk_button_label(nuklearContext, "VALIDATE")) groupData->Validate();
+			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE")) groupData->Validate();
 		}//End else if
 
 		return true;
@@ -93,7 +106,7 @@ private:
 		if (nk_button_label(nuklearContext, "SAVE")) windowData->Save();
 		if (nk_button_label(nuklearContext, "LOAD")) windowData->Load();
 		if (nk_button_label(nuklearContext, "EXPORT")) windowData->Export(windowData.get());
-		if (nk_button_label(nuklearContext, "DELETE")) windowData->Delete();
+		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE")) windowData->Delete();
 
 		return true;
 	}//End RenderWindowFooter
@@ -173,6 +186,7 @@ private:
 
 		if (!templateNames.empty())
 		{
+			nuklearContext->style.combo = addComboStyle_;
 			//Dropdown/button combo which selects and adds template at the same time
 			if (nk_combo_begin_label(nuklearContext, "Add Template To Group", nk_vec2(300, 300)))
 			{
@@ -214,6 +228,7 @@ private:
 		{
 			nk_label(nuklearContext, "NO TEMPLATES TO ADD TO GROUP", NK_TEXT_CENTERED);
 		}//End else
+		nuklearContext->style.combo = defaultComboStyle_;
 		nk_style_pop_float(nuklearContext);
 		nk_style_pop_vec2(nuklearContext);
 
@@ -229,7 +244,7 @@ private:
 			//Template Button
 			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
-					if (nk_button_label(nuklearContext, "Open New Template Window"))
+					if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_TEMPLATE_WINDOW_BUTTON], "Open New Template Window"))
 						CreateNewWindow("Template Window", TEMPLATE_WINDOW);
 				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 					nk_label(nuklearContext, "Templates", NK_TEXT_LEFT);
@@ -240,7 +255,7 @@ private:
 			//Member Button
 			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
-					if (nk_button_label(nuklearContext, "Open New Member Window"))
+				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_MEMBER_WINDOW_BUTTON], "Open New Member Window"))
 						CreateNewWindow("Member Window", MEMBER_WINDOW);
 				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 					nk_label(nuklearContext, "Members", NK_TEXT_LEFT);
@@ -248,10 +263,10 @@ private:
 					nk_label_wrap(nuklearContext, "The objects you can create, using a Template as the guide for how everything is laid out and validated.");
 			nk_layout_space_end(nuklearContext);
 
-			//Template Button
+			//Group Button
 			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 				nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
-					if (nk_button_label(nuklearContext, "Open New Group Window"))
+					if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_GROUP_WINDOW_BUTTON], "Open New Group Window"))
 						CreateNewWindow("Group Window", GROUP_WINDOW);
 				nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 					nk_label(nuklearContext, "Groups", NK_TEXT_LEFT);
@@ -356,10 +371,10 @@ private:
 				if (field->GetDataType() != DataType::BOOLEAN)
 				{
 					//Delete/Clear button for field
-					if (nk_button_label(nuklearContext, "CLEAR FIELD")) field->Delete();
+					if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "CLEAR FIELD")) field->Delete();
 
 					//Validate button for field
-					if (nk_button_label(nuklearContext, "VALIDATE")) field->Validate();
+					if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE")) field->Validate();
 				}//End if
 				else
 				{
@@ -404,11 +419,11 @@ private:
 
 				nk_label(nuklearContext, fullNameOfMember.c_str(), NK_TEXT_LEFT);
 
-				if (nk_button_label(nuklearContext, "VALIDATE"))
+				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE"))
 				{
 					member->Validate();
 				}//End if
-				if (nk_button_label(nuklearContext, "REMOVE"))
+				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "REMOVE"))
 				{
 					groupData->RemoveMemberFromGroup(member);
 				}//End if
@@ -429,6 +444,7 @@ private:
 				//Cache all members from the data manager for sorting
 				if (!addableMembers.empty())
 				{
+					nuklearContext->style.combo = addComboStyle_;
 					//Similar button/dropdown system to the add template dropdown
 					if (nk_combo_begin_label(nuklearContext, "ADD MEMBER", nk_vec2(300, 300)))
 					{
@@ -475,6 +491,7 @@ private:
 						}//End for
 						nk_combo_end(nuklearContext);
 					}//End if
+					nuklearContext->style.combo = defaultComboStyle_;
 				}//End if
 			}//End if
 
@@ -528,7 +545,7 @@ private:
 				}//End else
 
 				//Delete Field Button
-				if (nk_button_label(nuklearContext, "DELETE FIELD")) field->Delete();
+				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE FIELD")) field->Delete();
 
 				//Validation rule fill-out
 				if (nk_tree_push_id(nuklearContext, NK_TREE_TAB, "Validation Details", NK_MAXIMIZED, i))
@@ -674,7 +691,7 @@ private:
 
 			//Add Field Button
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
-			if (nk_button_label(nuklearContext, "ADD FIELD")) templateData->AddNewField();
+			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::ADD_BUTTON], "ADD FIELD")) templateData->AddNewField();
 
 			dataManager_->UpdateInstance(templateData);
 		}//End else if
@@ -778,9 +795,94 @@ private:
 		return true;
 	}//End RenderWindow
 
-public:
-	NuklearWindowManager(shared_ptr<DataManager> dataManager) : dataManager_(std::move(dataManager))
+	void CreateStyles(const nk_context* nuklearContext)
 	{
+		//Open Template Window style
+		nk_style_button openTemplateWindowStyle = nuklearContext->style.button;
+		openTemplateWindowStyle.normal = nk_style_item_color(nk_rgb(40, 115, 115));
+		openTemplateWindowStyle.hover = nk_style_item_color(nk_rgb(60, 135, 135));
+		openTemplateWindowStyle.active = nk_style_item_color(nk_rgb(30, 105, 105));
+		openTemplateWindowStyle.border_color = nk_rgb(250, 255, 255);
+		openTemplateWindowStyle.text_normal = nk_rgb(250, 250, 250);
+		openTemplateWindowStyle.text_hover = nk_rgb(253, 253, 253);
+		openTemplateWindowStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::OPEN_TEMPLATE_WINDOW_BUTTON, openTemplateWindowStyle);
+
+		//Open Member Window style
+		nk_style_button openMemberWindowStyle = nuklearContext->style.button;
+		openMemberWindowStyle.normal = nk_style_item_color(nk_rgb(115, 40, 115));
+		openMemberWindowStyle.hover = nk_style_item_color(nk_rgb(135, 60, 135));
+		openMemberWindowStyle.active = nk_style_item_color(nk_rgb(105, 30, 105));
+		openMemberWindowStyle.border_color = nk_rgb(255, 250, 255);
+		openMemberWindowStyle.text_normal = nk_rgb(250, 250, 250);
+		openMemberWindowStyle.text_hover = nk_rgb(253, 253, 253);
+		openMemberWindowStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::OPEN_MEMBER_WINDOW_BUTTON, openMemberWindowStyle);
+
+		//Open Group Window style
+		nk_style_button openGroupWindowStyle = nuklearContext->style.button;
+		openGroupWindowStyle.normal = nk_style_item_color(nk_rgb(115, 115, 40));
+		openGroupWindowStyle.hover = nk_style_item_color(nk_rgb(135, 135, 60));
+		openGroupWindowStyle.active = nk_style_item_color(nk_rgb(105, 105, 30));
+		openGroupWindowStyle.border_color = nk_rgb(255, 255, 250);
+		openGroupWindowStyle.text_normal = nk_rgb(250, 250, 250);
+		openGroupWindowStyle.text_hover = nk_rgb(253, 253, 253);
+		openGroupWindowStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::OPEN_GROUP_WINDOW_BUTTON, openGroupWindowStyle);
+
+		//Validate style
+		nk_style_button validateStyle = nuklearContext->style.button;
+		validateStyle.normal = nk_style_item_color(nk_rgb(180, 55, 225));
+		validateStyle.hover = nk_style_item_color(nk_rgb(200, 75, 245));
+		validateStyle.active = nk_style_item_color(nk_rgb(170, 45, 215));
+		validateStyle.border_color = nk_rgb(255, 250, 255);
+		validateStyle.text_normal = nk_rgb(250, 250, 250);
+		validateStyle.text_hover = nk_rgb(253, 253, 253);
+		validateStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::VALIDATE_BUTTON, validateStyle);
+
+		//Delete style
+		nk_style_button deleteStyle = nuklearContext->style.button;
+		deleteStyle.normal = nk_style_item_color(nk_rgb(225, 30, 30));
+		deleteStyle.hover = nk_style_item_color(nk_rgb(245, 60, 60));
+		deleteStyle.active = nk_style_item_color(nk_rgb(215, 20, 20));
+		deleteStyle.border_color = nk_rgb(255, 250, 250);
+		deleteStyle.text_normal = nk_rgb(250, 250, 250);
+		deleteStyle.text_hover = nk_rgb(253, 253, 253);
+		deleteStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::DELETE_BUTTON, deleteStyle);
+
+		//Add style (button)
+		nk_style_button addButtonStyle = nuklearContext->style.button;
+		addButtonStyle.normal = nk_style_item_color(nk_rgb(60, 210, 90));
+		addButtonStyle.hover = nk_style_item_color(nk_rgb(90, 240, 120));
+		addButtonStyle.active = nk_style_item_color(nk_rgb(50, 200, 80));
+		addButtonStyle.border_color = nk_rgb(250, 255, 250);
+		addButtonStyle.text_normal = nk_rgb(250, 250, 250);
+		addButtonStyle.text_hover = nk_rgb(253, 253, 253);
+		addButtonStyle.text_active = nk_rgb(245, 245, 245);
+		buttonStyleMap_.emplace(BUTTON_STYLE::ADD_BUTTON, addButtonStyle);
+
+		//Add style (combo)
+		addComboStyle_ = nuklearContext->style.combo;
+		addComboStyle_.normal = nk_style_item_color(nk_rgb(60, 210, 90));
+		addComboStyle_.hover = nk_style_item_color(nk_rgb(90, 240, 120));
+		addComboStyle_.active = nk_style_item_color(nk_rgb(50, 200, 80));
+		addComboStyle_.border_color = nk_rgb(250, 255, 250);
+		addComboStyle_.label_normal = nk_rgb(250, 250, 250);
+		addComboStyle_.label_hover = nk_rgb(253, 253, 253);
+		addComboStyle_.label_active = nk_rgb(245, 245, 245);
+		addComboStyle_.button = addButtonStyle;
+
+		//Set default style for switching back
+		defaultComboStyle_ = nuklearContext->style.combo;
+	}//End CreateButtonStyles
+public:
+	NuklearWindowManager(shared_ptr<DataManager> dataManager, nk_context* nuklearContext) : dataManager_(std::move(dataManager))
+	{
+		//Create the custom button styles to be used throughout the program
+		CreateStyles(nuklearContext);
+
 		//Create landing window
 		CreateNewWindow("Data Authoring Tool", LANDING);
 	}//End constructor
