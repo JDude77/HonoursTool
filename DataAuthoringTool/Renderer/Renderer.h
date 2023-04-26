@@ -19,14 +19,14 @@ class Renderer
 {
 #pragma region Attributes
 private:
-	nk_context* nuklearContext_;
-	nk_colorf* backgroundColour_;
+	nk_context* nuklearContext_{};
+	nk_colorf* backgroundColour_{};
 
 	WNDCLASSW windowClass_{};
 	RECT windowRect_{};
 	DWORD style_ = WS_OVERLAPPEDWINDOW;
 	DWORD extendedStyle_ = WS_EX_APPWINDOW;
-	HWND hwnd_;
+	HWND hwnd_{};
 	DXGI_SWAP_CHAIN_DESC swapChainDesc_{};
 	D3D_FEATURE_LEVEL featureLevel_;
 
@@ -42,6 +42,7 @@ public:
 #pragma region Behaviours
 private:
 	static void SetSwapChainSize(int width, int height);
+	static void InitFullScreenSize(RECT& fullscreenSize);
 	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 	void InitNuklear(int windowWidth, int windowHeight, const std::string& fontName = "", int fontSize = 12);
 	void InitD3D11(int windowWidth, int windowHeight);

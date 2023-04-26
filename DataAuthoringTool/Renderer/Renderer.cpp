@@ -25,13 +25,25 @@ static ID3D11Device* device;
 static ID3D11DeviceContext* context;
 static ID3D11RenderTargetView* renderTargetView;
 
+void Renderer::InitFullScreenSize(RECT& fullscreenSize)
+{
+	const HWND desktopRef = GetDesktopWindow();
+	GetClientRect(desktopRef, &fullscreenSize);
+
+	*windowHeight_ = fullscreenSize.bottom - fullscreenSize.top - 63;
+	*windowWidth_ = fullscreenSize.right - fullscreenSize.left;
+}//End InitFullScreenSize
+
 Renderer::Renderer(const std::string& windowName, const int windowWidth, const int windowHeight, shared_ptr<DataManager> dataManager, const std::string& fontName, const int fontSize)
 {
 	InitWindow(windowName, windowWidth, windowHeight);
+
+	RECT fullscreenSize;
+	InitFullScreenSize(fullscreenSize);
 	
-	InitD3D11(windowWidth, windowHeight);
+	InitD3D11(*windowWidth_, *windowHeight_);
 	
-	InitNuklear(windowWidth, windowHeight, fontName, fontSize);
+	InitNuklear(*windowWidth_, *windowHeight_, fontName, fontSize);
 
 	nuklearWindowManager_ = new NuklearWindowManager(std::move(dataManager), nuklearContext_);
 }//End Renderer Constructor
@@ -50,7 +62,8 @@ Renderer::~Renderer()
 int Renderer::Update() const
 {
 	const int running = ProcessUserInput();
-	
+
+	//Keep the size of the landing window the same as the viewport
 	nuklearWindowManager_->UpdateWindowSize(*windowWidth_, *windowHeight_);
 
 	/////////////////////////////////
@@ -68,7 +81,7 @@ void Renderer::InitNuklear(const int windowWidth, const int windowHeight, const 
 	nuklearContext_ = nk_d3d11_init(device, windowWidth, windowHeight, MAX_VERTEX_BUFFER, MAX_INDEX_BUFFER);
 	
 	nk_font_atlas* fontAtlas;
-	const nk_font *font = nullptr;
+	const nk_font* font = nullptr;
 	nk_d3d11_font_stash_begin(&fontAtlas);
 	if(!fontName.empty())
 	{
@@ -113,15 +126,13 @@ void Renderer::InitD3D11(const int windowWidth, const int windowHeight)
 			&swapChainDesc_, &swapChain, &device, &featureLevel_, &context);
 		assert(SUCCEEDED(hresult));
 	}//End if
+
 	SetSwapChainSize(windowWidth, windowHeight);
 }//End InitD3D11
 
 void Renderer::InitWindow(const std::string& windowName, const int windowWidth, const int windowHeight)
 {
 	windowRect_ = { 0, 0, windowWidth, windowHeight };
-
-	*windowWidth_ = windowWidth;
-	*windowHeight_ = windowHeight;
 
 	memset(&windowClass_, 0, sizeof(windowClass_));
 	windowClass_.style = CS_DBLCLKS;
@@ -136,7 +147,7 @@ void Renderer::InitWindow(const std::string& windowName, const int windowWidth, 
 
 	const std::wstring windowNameTemp = std::wstring(windowName.begin(), windowName.end());
 	hwnd_ = CreateWindowExW(extendedStyle_, windowClass_.lpszClassName, windowNameTemp.c_str(),
-	                       style_ | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
+	                       style_ | WS_VISIBLE | WS_MAXIMIZE, CW_USEDEFAULT, CW_USEDEFAULT,
 	                       windowRect_.right - windowRect_.left, windowRect_.bottom - windowRect_.top,
 	                       nullptr, nullptr, windowClass_.hInstance, nullptr);
 }//End InitWindow

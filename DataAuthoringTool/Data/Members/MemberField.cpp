@@ -115,3 +115,78 @@ const char* MemberField::GetTypeLabel() const
 
 	return typeArray;
 }//End GetTypeLabel
+
+void MemberField::RefreshName()
+{
+	fieldName_.clear();
+	fieldName_.append(parentMember_->GetType()->GetFieldAtIndex(fieldIndex_)->GetIDBuffer());
+}//End RefreshName
+
+void MemberField::RefreshType()
+{
+	const DataType::DATA_TYPE newType = *parentMember_->GetType()->GetFieldAtIndex(fieldIndex_)->GetDataType();
+
+	//If there's no existing data in the buffer, safe to immediately switch
+	if(strlen(field_->dataBuffer_) == 0)
+	{
+		dataType_ = newType;
+		return;
+	}//End if
+
+	bool clearAll = true;
+
+	//If there is data in the buffer, check for type compatibility
+	switch(dataType_)
+	{
+		case DataType::STRING: 
+			if(newType == DataType::CHAR)
+			{
+				clearAll = false;
+				//Take the first character of the old data for the char switch
+				const char first = field_->dataBuffer_[0];
+				memset(field_->dataBuffer_, 0, sizeof(field_->dataBuffer_));
+				field_->dataBuffer_[0] = first;
+				field_->dataBufferCurrentSize_ = 2;
+			}//End if
+			break;
+		case DataType::INTEGER:
+			if(newType == DataType::FLOAT)
+			{
+				//Leave the data as is, it'll be fine
+				clearAll = false;
+			}//End if
+			break;
+		case DataType::FLOAT:
+			if(newType == DataType::INTEGER)
+			{
+				//Stringify for easier function use
+				string data = field_->dataBuffer_;
+				//Take the data from before the decimal point
+				const int pos = data.find('.');
+				const string newData = data.substr(0, pos);
+				if(!newData.empty())
+				{
+					clearAll = false;
+					memset(field_->dataBuffer_, 0, sizeof(field_->dataBuffer_));
+					strcpy(field_->dataBuffer_, newData.c_str());
+					field_->dataBufferCurrentSize_ = newData.size();
+				}//End if
+			}//End if
+			break;
+		case DataType::CHAR:
+			if(newType == DataType::STRING)
+			{
+				clearAll = false;
+			}//End if
+			break;
+
+		case DataType::BOOLEAN: case DataType::NONE: default: ;
+	}//End switch
+
+	if(clearAll)
+	{
+		memset(field_->dataBuffer_, 0, sizeof field_->dataBuffer_);
+		field_->dataBufferCurrentSize_ = 0;
+	}//End if
+	dataType_ = newType;
+}//End RefreshType

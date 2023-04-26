@@ -31,6 +31,7 @@ void TemplateField::RefreshValidationRules(const int type)
 	}//End for
 }//End RefreshValidationRules
 
+
 void TemplateField::SetDataType(const int type)
 {
 	const int cache = typeInt_;
@@ -46,3 +47,4 @@ void TemplateField::SetDataType(const DataType::DATA_TYPE type)
 	typeInt_ = type;
 	if(dataType_ != cache) RefreshValidationRules(type);
 }//End SetDataType
+

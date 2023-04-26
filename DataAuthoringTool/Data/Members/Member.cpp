@@ -249,3 +249,44 @@ void Member::SetType(const shared_ptr<Template>& temp)
 		fields_.emplace_back(this, *field.GetDataType(), i);
 	}//End for
 }//End SetType
+
+void Member::RefreshFieldName(const int fieldIndex)
+{
+	fields_.at(fieldIndex).RefreshName();
+}//End RefreshFieldName
+
+void Member::RefreshFieldType(const int fieldIndex)
+{
+	fields_.at(fieldIndex).RefreshType();
+}//End RefreshFieldType
+
+void Member::RefreshFieldQuantity()
+{
+	vector<MemberField> cache;
+	if(!fields_.empty())
+	{
+		cache = fields_;
+		fields_.clear();
+	}//End if
+
+	if(type_ == nullptr) return;
+
+	const auto fields = type_->GetFields();
+
+	for(int i = 0; i < type_->GetNumberOfFields(); i++)
+	{
+		TemplateField field = fields[i];
+		fields_.emplace_back(this, *field.GetDataType(), i);
+	}//End for
+
+	for (int i = 0; i < cache.size(); i++)
+	{
+		if(fields_.size() > i)
+		{
+			if(strcmp(fields_.at(i).GetNameAndTypeLabel(), cache.at(i).GetNameAndTypeLabel()) == 0)
+			{
+				strcpy(fields_.at(i).GetDataBuffer(), cache.at(i).GetDataBuffer());
+			}//End if
+		}//End if
+	}//End for
+}//End RefreshFieldQuantity

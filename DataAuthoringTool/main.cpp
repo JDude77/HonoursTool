@@ -5,7 +5,7 @@ int main()
 {
 	static int running = 1;
 	shared_ptr<DataManager> dataManager = std::make_shared<DataManager>(DataManager());
-	auto renderer = new Renderer("Demo", 600, 400, std::move(dataManager), "", 12);
+	auto renderer = new Renderer("Demo", 1280, 720, std::move(dataManager), "", 12);
 
 	while(running)
 	{

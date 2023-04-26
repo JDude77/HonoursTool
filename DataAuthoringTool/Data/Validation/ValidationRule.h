@@ -112,6 +112,7 @@ struct ValidationFunction
 	static bool IntegerDivisibleByInteger(const char* dataBuffer, const char* divisor)
 	{
 		const auto number = strtol(dataBuffer, nullptr, 0);
+		if(number == 0) return false;
 		return number % strtol(divisor, nullptr, 0) == 0;
 	}//End IntegerDivisibleByInteger
 

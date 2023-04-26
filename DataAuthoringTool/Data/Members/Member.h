@@ -37,6 +37,10 @@ public:
 	void SetTemplateIndex(const int index) { templateIndex_ = index; }
 	void SetType(const shared_ptr<Template>& temp);
 
+	void RefreshFieldName(int fieldIndex);
+	void RefreshFieldType(int fieldIndex);
+	void RefreshFieldQuantity();
+
 private:
 	int templateIndex_ = 0;
 	shared_ptr<Template> type_ = nullptr;

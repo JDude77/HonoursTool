@@ -28,6 +28,9 @@ public:
 	[[nodiscard]] const int* GetDataBufferMaxSize() const { return &field_->maxDataBufferSize_; }
 	[[nodiscard]] bool* GetBooleanData() const { return &field_->booleanData; }
 
+	void RefreshName();
+	void RefreshType();
+
 private:
 	shared_ptr<Field> field_ = nullptr;
 	string fieldName_;
