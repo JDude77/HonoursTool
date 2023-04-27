@@ -52,5 +52,7 @@ public:
 	void UpdateInstance(const shared_ptr<Group>& instance);
 
 	static int GetInternalID(bool incrementAfter);
+
+	void DeleteInstanceAndCleanUpConnections(const shared_ptr<PrimaryData>& instance);
 };
 #endif

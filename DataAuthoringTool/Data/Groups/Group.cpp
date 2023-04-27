@@ -34,7 +34,12 @@ int Group::Validate()
 
 int Group::Delete()
 {
-	//TODO: Group Delete functionality
+	memset(idBuffer_, 0, sizeof idBuffer_);
+	idBufferCurrentLength_ = 0;
+	memset(nameBuffer_, 0, sizeof nameBuffer_);
+	nameBufferCurrentLength_ = 0;
+	members_.clear();
+	templates_.clear();
 	return 1;
 }//End Delete
 
@@ -158,7 +163,7 @@ int Group::RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove)
 	vector<std::ranges::borrowed_iterator_t<vector<pair<string, shared_ptr<Member>>>&>> membersToErase;
 	for (auto& member : members_)
 	{
-		if(member.second->GetType()->GetIDBuffer() == templateToRemove->GetIDBuffer())
+		if(member.second->GetType()->GetInternalID() == templateToRemove->GetInternalID())
 		{
 			//Safely mark all of them for deletion by grabbing a reference to their iterator positions
 			membersToErase.push_back(std::ranges::find(members_, member));
@@ -173,6 +178,9 @@ int Group::RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove)
 
 	//Remove the template from the group
 	templates_.erase(it);
+
+	//Try and fix the tabs issue
+	if(templates_.empty()) activeTemplateTab_ = -1;
 
 	return 1;
 }//End RemoveTemplateFromGroup

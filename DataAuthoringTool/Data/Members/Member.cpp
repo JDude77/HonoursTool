@@ -203,7 +203,11 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 
 int Member::Delete()
 {
-	//TODO: Member delete functionality
+	memset(idBuffer_, 0, sizeof idBuffer_);
+	idBufferCurrentLength_ = 0;
+	memset(nameBuffer_, 0, sizeof nameBuffer_);
+	nameBufferCurrentLength_ = 0;
+	fields_.clear();
 	return 1;
 }//End Delete
 

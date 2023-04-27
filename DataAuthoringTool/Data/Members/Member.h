@@ -6,6 +6,8 @@
 #include "MemberField.h"
 
 #include <string>
+
+#include "../Templates/Template.h"
 using std::string;
 #include <vector>
 using std::vector;
@@ -27,7 +29,7 @@ public:
 	int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
 	int Delete() override;
 	int Validate() override;
-	bool IsEmpty() const override { return PrimaryData::IsEmpty() && fields_.empty() && type_ == nullptr; }
+	bool IsEmpty() const override { return PrimaryData::IsEmpty() && fields_.empty() && (type_ == nullptr || type_->GetInternalID() == -1); }
 
 	shared_ptr<Template> GetType() { return type_; }
 	int GetTemplateIndex() const { return templateIndex_; }

@@ -506,7 +506,7 @@ private:
 					for (auto& addableMember : addableMembers)
 					{
 						//If it doesn't have data, don't waste time on it
-						if (addableMember->IsEmpty()) continue;
+						if (addableMember->IsEmpty() || addableMember->GetType() == nullptr) continue;
 
 						//If the member is of the same type as the current active template tab
 						if (strcmp(addableMember->GetType()->GetIDBuffer(), groupData->GetTemplates().at(activeTab)->GetIDBuffer()) == 0)
@@ -885,7 +885,11 @@ private:
 		//if (nk_button_label(nuklearContext, "SAVE")) windowData->Save();
 		//if (nk_button_label(nuklearContext, "LOAD")) windowData->Load();
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::EXPORT_BUTTON], exportLabel.c_str())) windowData->Export(windowData.get());
-		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE")) windowData->Delete();
+		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE"))
+		{
+			dataManager_->DeleteInstanceAndCleanUpConnections(windowData);
+			windowData->Delete();
+		}//End if
 
 		return true;
 	}//End RenderWindowFooter

@@ -167,3 +167,41 @@ int DataManager::GetInternalID(const bool incrementAfter)
 	++internalIDCounter_;
 	return temp;
 }//End GetInternalID
+
+void DataManager::DeleteInstanceAndCleanUpConnections(const shared_ptr<PrimaryData>& instance)
+{
+	if(const auto member = std::dynamic_pointer_cast<Member>(instance))
+	{
+		//Remove member from any groups it's in
+		for (auto it = groups_.begin(); it != groups_.end(); ++it)
+		{
+			const auto cachedGroup = it->second;
+			cachedGroup->RemoveMemberFromGroup(member);
+		}//End for
+
+		//Set its type to None
+		member->SetType(templates_["None"]);
+		member->SetTemplateIndex(0);
+	}//End if
+
+	else if(const auto temp = std::dynamic_pointer_cast<Template>(instance))
+	{
+		//Check all groups for this template type
+		for(auto it = groups_.begin(); it != groups_.end(); ++it)
+		{
+			const auto cachedGroup = it->second;
+			cachedGroup->RemoveTemplateFromGroup(temp);
+		}//End for
+
+		//Set type of template back to none for all members of this type
+		for(auto it = members_.begin(); it != members_.end(); ++it)
+		{
+			const auto cachedMember = it->second;
+			if(cachedMember->GetType()->GetInternalID() == temp->GetInternalID())
+			{
+				cachedMember->SetType(templates_["None"]);
+				cachedMember->SetTemplateIndex(0);
+			}//End if
+		}//End for
+	}//End else if
+}//End DeleteInstanceAndCleanUpConnections
