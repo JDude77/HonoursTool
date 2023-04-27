@@ -17,223 +17,222 @@ MemberField::MemberField(Member* parentMember, const DataType::DATA_TYPE dataTyp
 
 int MemberField::Validate()
 {
+	if(dataType_ == DataType::BOOLEAN || dataType_ == DataType::NONE) return 1;
+
 	const auto templateField = parentMember_->GetType()->GetFieldAtIndex(fieldIndex_);
 	const auto validationRules = templateField->GetValidationRules();
 	const auto validationParameters = templateField->GetValidationRuleParameters();
 
+	string text = GetNameAndTypeLabel();
+	int activeTests = 0;
+	int testsPassed = 0;
+	bool presenceRuleActive = false;
+	bool presenceRulePassed = false;
+
 	for (auto& [rule, active] : *validationRules)
 	{
+		//Only bother validating if the current rule is active, and if the presence rule has been checked and passed
+		//This works because the presence rule is always checked first since it belongs to all data types
 		if(active != 0)
 		{
-			bool success;
-			string text;
-			switch (rule)
+			++activeTests;
+			if(rule == ALL_PRESENCE || (rule != ALL_PRESENCE && !presenceRuleActive || presenceRuleActive && presenceRulePassed))
 			{
-				case ALL_PRESENCE:
-					success = ValidationFunction::Presence(GetDataBuffer());
-					text = "Presence Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success) text.append("successful! (Data Is Present)");
-					else text.append("unsuccessful! (Data Is Missing)");
-					break;
+				bool success;
+				text.append("\n");
+				switch (rule)
+				{
+					case ALL_PRESENCE:
+						presenceRuleActive = true;
+						success = ValidationFunction::Presence(GetDataBuffer());
+						text.append("\tPresence Test was ");
+						if(success)
+						{
+							text.append("successful! (Data Is Present)");
+							presenceRulePassed = true;
+						}//End if
+						else text.append("unsuccessful! (Data Is Missing)");
+						break;
 
-				case STRING_MAX_LENGTH:
-					success = ValidationFunction::StringMaxLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "String Max Length Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success) text.append("successful! (Text Is Shorter Than Max Length Of ");
-					else text.append("unsuccessful! (Text Is Longer Than Max Length Of ");
-					text.append(validationParameters->GetBuffer(rule));
-					text.append(" Characters)");
-					break;
-
-				case STRING_MIN_LENGTH:
-					success = ValidationFunction::StringMinLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "String Min Length Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success) text.append("successful! (Text Is Longer Than Min Length Of ");
-					else text.append("unsuccessful! (Text Is Shorter Than Min Length Of ");
-					text.append(validationParameters->GetBuffer(rule));
-					text.append(" Characters)");
-					break;
-
-				case STRING_STARTS_WITH_SUBSTRING:
-					success = ValidationFunction::StringStartsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "String Starts With Substring Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success) text.append("successful! (Text Starts With Substring: \"");
-					else text.append("unsuccessful! (Text Does Not Start With Substring: \"");
-					text.append(validationParameters->GetBuffer(rule));
-					text.append("\")");
-					break;
-
-				case STRING_ENDS_WITH_SUBSTRING:
-					success = ValidationFunction::StringEndsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "String Ends With Substring Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success) text.append("successful! (Text Ends With Substring: \"");
-					else text.append("unsuccessful! (Text Does Not End With Substring: \"");
-					text.append(validationParameters->GetBuffer(rule));
-					text.append("\")");
-					break;
-
-				case NUMBER_IS_NOT_NEGATIVE:
-					success = ValidationFunction::NumberIsNotNegative(GetDataBuffer());
-					text = "Number Is Not Negative Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Positive)");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Negative)");
-					}//End else
-					break;
-
-				case NUMBER_IS_NEGATIVE:
-					success = ValidationFunction::NumberIsNegative(GetDataBuffer());
-					text = "Number Is Negative Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Negative)");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Positive)");
-					}//End else
-					break;
-
-				case NUMBER_IS_NOT_ZERO:
-					success = ValidationFunction::NumberIsNotZero(GetDataBuffer());
-					text = "Number Is Not Zero Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Not Zero)");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Zero)");
-					}//End else
-					break;
-
-				case NUMBER_IS_LESS_THAN:
-					success = ValidationFunction::NumberIsLessThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "Number Is Less Than Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Less Than Validation Number ");
+					case STRING_MAX_LENGTH:
+						success = ValidationFunction::StringMaxLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tString Max Length was ");
+						if(success) text.append("successful! (Text Is Shorter Than Max Length Of ");
+						else text.append("unsuccessful! (Text Is Longer Than Max Length Of ");
 						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Greater Than Or Equal To Validation Number ");
-						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End else
-					break;
+						text.append(" Characters)");
+						break;
 
-				case NUMBER_IS_GREATER_THAN:
-					success = ValidationFunction::NumberIsGreaterThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "Number Is Greater Than Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Greater Than Validation Number ");
+					case STRING_MIN_LENGTH:
+						success = ValidationFunction::StringMinLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tString Min Length Test was ");
+						if(success) text.append("successful! (Text Is Longer Than Min Length Of ");
+						else text.append("unsuccessful! (Text Is Shorter Than Min Length Of ");
 						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Less Than Or Equal To Validation Number ");
-						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End else
-					break;
+						text.append(" Characters)");
+						break;
 
-				case INTEGER_DIVISIBLE_BY_INTEGER:
-					success = ValidationFunction::IntegerDivisibleByInteger(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "Integer Divisible By Other Integer Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Divides Into ");
+					case STRING_STARTS_WITH_SUBSTRING:
+						success = ValidationFunction::StringStartsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tString Starts With Substring Test was ");
+						if(success) text.append("successful! (Text Starts With Substring: \"");
+						else text.append("unsuccessful! (Text Does Not Start With Substring: \"");
 						text.append(validationParameters->GetBuffer(rule));
-						text.append(" With No Remainder)");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Number ");
-						text.append(field_->dataBuffer_);
-						text.append(" Does Not Divide Into ");
+						text.append("\")");
+						break;
+
+					case STRING_ENDS_WITH_SUBSTRING:
+						success = ValidationFunction::StringEndsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tString Ends With Substring Test was ");
+						if(success) text.append("successful! (Text Ends With Substring: \"");
+						else text.append("unsuccessful! (Text Does Not End With Substring: \"");
 						text.append(validationParameters->GetBuffer(rule));
-						text.append(" With No Remainder)");
-					}//End else
-					break;
-				case CHAR_IS_ONE_OF_CHARACTER_SET:
-					success = ValidationFunction::CharIsOneOfCharacterSet(GetDataBuffer(), validationParameters->GetBuffer(rule));
-					text = "Character Is One Of Set Test on ";
-					text.append(GetNameAndTypeLabel());
-					text.append(" was ");
-					if(success)
-					{
-						text.append("successful! (Provided Character ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is One Of Accepted Values: ");
-						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End if
-					else 
-					{
-						text.append("unsuccessful! (Provided Character ");
-						text.append(field_->dataBuffer_);
-						text.append(" Is Not One Of Accepted Values: ");
-						text.append(validationParameters->GetBuffer(rule));
-						text.append(")");
-					}//End else
-					break;
-				case NA: default: success = true;
-			}//End switch
-			std::cout << text << std::endl;
+						text.append("\")");
+						break;
+
+					case NUMBER_IS_NOT_NEGATIVE:
+						success = ValidationFunction::NumberIsNotNegative(GetDataBuffer());
+						text.append("\tNumber Is Not Negative Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Positive)");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Negative)");
+						}//End else
+						break;
+
+					case NUMBER_IS_NEGATIVE:
+						success = ValidationFunction::NumberIsNegative(GetDataBuffer());
+						text.append("\tNumber Is Negative Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Negative)");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Positive)");
+						}//End else
+						break;
+
+					case NUMBER_IS_NOT_ZERO:
+						success = ValidationFunction::NumberIsNotZero(GetDataBuffer());
+						text.append("\tNumber Is Not Zero Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Not Zero)");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Zero)");
+						}//End else
+						break;
+
+					case NUMBER_IS_LESS_THAN:
+						success = ValidationFunction::NumberIsLessThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tNumber Is Less Than Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Less Than Validation Number ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Greater Than Or Equal To Validation Number ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End else
+						break;
+
+					case NUMBER_IS_GREATER_THAN:
+						success = ValidationFunction::NumberIsGreaterThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tNumber Is Greater Than Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Greater Than Validation Number ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Less Than Or Equal To Validation Number ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End else
+						break;
+
+					case INTEGER_DIVISIBLE_BY_INTEGER:
+						success = ValidationFunction::IntegerDivisibleByInteger(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tInteger Divisible By Other Integer Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Divides Into ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(" With No Remainder)");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Number ");
+							text.append(field_->dataBuffer_);
+							text.append(" Does Not Divide Into ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(" With No Remainder)");
+						}//End else
+						break;
+					case CHAR_IS_ONE_OF_CHARACTER_SET:
+						success = ValidationFunction::CharIsOneOfCharacterSet(GetDataBuffer(), validationParameters->GetBuffer(rule));
+						text.append("\tCharacter Is One Of Set Test was ");
+						if(success)
+						{
+							text.append("successful! (Provided Character ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is One Of Accepted Values: ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End if
+						else 
+						{
+							text.append("unsuccessful! (Provided Character ");
+							text.append(field_->dataBuffer_);
+							text.append(" Is Not One Of Accepted Values: ");
+							text.append(validationParameters->GetBuffer(rule));
+							text.append(")");
+						}//End else
+						break;
+					case NA: default: success = true;
+				}//End switch
+				if(success) ++testsPassed;
+				std::cout << text;
+				text.clear();
+			}//End if
 		}//End if
 	}//End for
+
+	std::cout << std::endl << '\t' << testsPassed << '/' << activeTests << " validation tests passed!" << std::endl;
 
 	return 1;
 }//End Validate

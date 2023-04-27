@@ -23,7 +23,7 @@ int Group::Load()
 int Group::Validate()
 {
 	//TODO: Group Validate functionality extended
-	std::cout << "Group " << idBuffer_ << " Validating All Members..." << std::endl;
+	std::cout << "Group " << idBuffer_ << " Validating All Members..." << std::endl << std::endl;
 	for (const auto& member : members_ | std::views::values)
 	{
 		member->Validate();

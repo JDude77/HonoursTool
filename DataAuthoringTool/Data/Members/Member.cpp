@@ -218,7 +218,7 @@ int Member::Validate()
 	{
 		field.Validate();
 	}//End for
-	std::cout << "Member " << idBuffer_ << " Validation Complete" << std::endl;
+	std::cout << "Member " << idBuffer_ << " Validation Complete\n" << std::endl;
 	return 1;
 }//End Validate
 
