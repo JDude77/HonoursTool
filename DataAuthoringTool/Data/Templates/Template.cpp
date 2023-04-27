@@ -187,7 +187,11 @@ int Template::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> j
 
 int Template::Delete()
 {
-	//TODO: Template Delete functionality
+	memset(idBuffer_, 0, sizeof idBuffer_);
+	idBufferCurrentLength_ = 0;
+	memset(nameBuffer_, 0, sizeof nameBuffer_);
+	nameBufferCurrentLength_ = 0;
+	fields_.clear();
 	return 1;
 }//End Delete (Template)
 

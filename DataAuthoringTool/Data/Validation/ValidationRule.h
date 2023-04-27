@@ -65,6 +65,7 @@ struct ValidationFunction
 
 	static bool StringStartsWithSubstring(const char* dataBuffer, const char* subString)
 	{
+		if(strlen(dataBuffer) == 0) return false;
 		const string data(dataBuffer);
 		const string sub(subString);
 		const auto temp = data.substr(0, sub.size());
@@ -74,6 +75,7 @@ struct ValidationFunction
 
 	static bool StringEndsWithSubstring(const char* dataBuffer, const char* subString)
 	{
+		if(strlen(dataBuffer) == 0) return false;
 		const string data(dataBuffer);
 		const string sub(subString);
 		const auto temp = data.substr(data.size() - sub.size(), sub.size());

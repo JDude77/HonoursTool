@@ -1,4 +1,7 @@
 #include "Group.h"
+
+#include <iostream>
+
 #include "../Members/Member.h"
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
@@ -20,10 +23,12 @@ int Group::Load()
 int Group::Validate()
 {
 	//TODO: Group Validate functionality extended
-	for (auto& member : members_)
+	std::cout << "Group " << idBuffer_ << " Validating All Members..." << std::endl;
+	for (const auto& member : members_ | std::views::values)
 	{
-		member.second->Validate();
+		member->Validate();
 	}//End for
+	std::cout << "Group " << idBuffer_ << " Validation Complete" << std::endl;
 	return 1;
 }//End Validate
 

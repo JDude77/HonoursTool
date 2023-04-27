@@ -1,5 +1,7 @@
 #include "Member.h"
 
+#include <iostream>
+
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
@@ -207,10 +209,12 @@ int Member::Delete()
 
 int Member::Validate()
 {
+	std::cout << "Member " << idBuffer_ << " Validating Data..." << std::endl;
 	for (auto& field : fields_)
 	{
 		field.Validate();
 	}//End for
+	std::cout << "Member " << idBuffer_ << " Validation Complete" << std::endl;
 	return 1;
 }//End Validate
 
@@ -252,11 +256,13 @@ void Member::SetType(const shared_ptr<Template>& temp)
 
 void Member::RefreshFieldName(const int fieldIndex)
 {
+	if(fields_.empty()) return;
 	fields_.at(fieldIndex).RefreshName();
 }//End RefreshFieldName
 
 void Member::RefreshFieldType(const int fieldIndex)
 {
+	if(fields_.empty()) return;
 	fields_.at(fieldIndex).RefreshType();
 }//End RefreshFieldType
 

@@ -150,6 +150,8 @@ void Renderer::InitWindow(const std::string& windowName, const int windowWidth, 
 	                       style_ | WS_VISIBLE | WS_MAXIMIZE, CW_USEDEFAULT, CW_USEDEFAULT,
 	                       windowRect_.right - windowRect_.left, windowRect_.bottom - windowRect_.top,
 	                       nullptr, nullptr, windowClass_.hInstance, nullptr);
+
+	ShowWindow(hwnd_, 3);
 }//End InitWindow
 
 int Renderer::ProcessUserInput() const

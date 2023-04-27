@@ -175,17 +175,17 @@ private:
 			}//End if
 		}//End if
 	}//End PreventNegativeAndNonNegativeRule
-	static void ClearDeletedCharacters(char* idBuffer, const int idBufferCurrentLength)
+	static void ClearDeletedCharacters(char* textBuffer, const int bufferCurrentLength)
 	{
 		//Check to see if the current buffer has more characters in it than there should be
-		if (strlen(idBuffer) > idBufferCurrentLength)
+		if (strlen(textBuffer) > bufferCurrentLength)
 		{
 			//Loop through every value after the end of the expected length of the buffer
-			for (int j = idBufferCurrentLength; j < TemplateField::GetBufferMax(); j++)
+			for (int j = bufferCurrentLength; j < TemplateField::GetBufferMax(); j++)
 			{
 				//Replace with a null character if it isn't already null - if it is, stop
-				if (idBuffer[j] == '\0') break;
-				idBuffer[j] = '\0';
+				if (textBuffer[j] == '\0') break;
+				textBuffer[j] = '\0';
 			}//End for
 		}//End if
 	}//End ClearDeletedCharacters
@@ -194,7 +194,6 @@ private:
 	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData) const
 	{
 		//Update cached templates
-		//TODO: Refactor this to not happen every frame of rendering a member window - only on templates updating
 		cachedTemplates_ = make_shared<vector<shared_ptr<Template>>>(dataManager_->GetAllTemplates());
 
 		const int cachedTemplateIndex = memberData->GetTemplateIndex();
@@ -396,7 +395,6 @@ private:
 			switch (field->GetDataType())
 			{
 			case DataType::STRING:
-				//TODO: Add functionality for applying length limit validation rule to max length
 				nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_default);
 				break;
 
@@ -421,8 +419,10 @@ private:
 				nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
 			}//End switch
 
-			if (field->GetDataType() != DataType::BOOLEAN)
+			if (field->GetDataType() != DataType::BOOLEAN && field->GetDataType() != DataType::NONE)
 			{
+				ClearDeletedCharacters(field->GetDataBuffer(), *field->GetDataBufferCurrentSize());
+
 				//Delete/Clear button for field
 				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "CLEAR FIELD")) field->Delete();
 
