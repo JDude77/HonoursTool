@@ -957,6 +957,7 @@ private:
 		//if (nk_button_label(nuklearContext, "LOAD")) windowData->Load();
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::EXPORT_BUTTON], exportLabel.c_str())) 
 		{
+			nuklearWindow->ClearSubFooterText();
 			windowData->Export(nuklearWindow->GetSubFooterText(),windowData.get());
 		}//End if
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE"))
