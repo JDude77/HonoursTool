@@ -151,6 +151,7 @@ void Renderer::InitWindow(const std::string& windowName, const int windowWidth, 
 	                       windowRect_.right - windowRect_.left, windowRect_.bottom - windowRect_.top,
 	                       nullptr, nullptr, windowClass_.hInstance, nullptr);
 
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	ShowWindow(hwnd_, 3);
 }//End InitWindow
 

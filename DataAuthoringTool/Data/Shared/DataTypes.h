@@ -2,9 +2,9 @@
 #ifndef DATA_TYPES
 #define DATA_TYPES
 
-static struct DataType
+struct DataType
 {
-	enum DATA_TYPE
+	enum struct DATA_TYPE
 	{
 		NONE,
 		STRING,

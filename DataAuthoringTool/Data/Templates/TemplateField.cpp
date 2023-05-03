@@ -44,7 +44,7 @@ void TemplateField::SetDataType(const DataType::DATA_TYPE type)
 {
 	const DataType::DATA_TYPE cache = dataType_;
 	dataType_ = type;
-	typeInt_ = type;
-	if(dataType_ != cache) RefreshValidationRules(type);
+	typeInt_ = static_cast<int>(type);
+	if(dataType_ != cache) RefreshValidationRules(static_cast<int>(type));
 }//End SetDataType
 

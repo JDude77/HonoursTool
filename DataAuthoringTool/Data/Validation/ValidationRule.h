@@ -137,19 +137,19 @@ class ValidationRule
 	{
 		//None (empty)
 		{
-			DataType::NONE,
+			DataType::DATA_TYPE::NONE,
 			vector{ NA }//End None Rules
 		},//End None Entry
 
 		//Boolean (empty)
 		{
-			DataType::BOOLEAN,
+			DataType::DATA_TYPE::BOOLEAN,
 			vector{ NA }//End Boolean Rules
 		},//End Boolean Entry
 
 		//String
 		{
-			DataType::STRING,
+			DataType::DATA_TYPE::STRING,
 			vector
 			{
 				ALL_PRESENCE,
@@ -162,7 +162,7 @@ class ValidationRule
 
 		//Integer
 		{
-			DataType::INTEGER,
+			DataType::DATA_TYPE::INTEGER,
 			vector
 			{
 				ALL_PRESENCE,
@@ -177,7 +177,7 @@ class ValidationRule
 
 		//Float
 		{
-			DataType::FLOAT,
+			DataType::DATA_TYPE::FLOAT,
 			vector
 			{
 				ALL_PRESENCE,
@@ -191,7 +191,7 @@ class ValidationRule
 
 		//Char
 		{
-			DataType::CHAR,
+			DataType::DATA_TYPE::CHAR,
 			vector
 			{
 				ALL_PRESENCE,
@@ -278,11 +278,11 @@ public:
 	{
 		switch(type)
 		{
-			case DataType::NONE: case DataType::BOOLEAN: return {};
-			case DataType::STRING:	return stringRuleLabels_;
-			case DataType::INTEGER:	return integerRuleLabels_;
-			case DataType::FLOAT:	return floatRuleLabels_;
-			case DataType::CHAR:	return charRuleLabels_;
+			case DataType::DATA_TYPE::NONE: case DataType::DATA_TYPE::BOOLEAN: return {};
+			case DataType::DATA_TYPE::STRING:	return stringRuleLabels_;
+			case DataType::DATA_TYPE::INTEGER:	return integerRuleLabels_;
+			case DataType::DATA_TYPE::FLOAT:	return floatRuleLabels_;
+			case DataType::DATA_TYPE::CHAR:	return charRuleLabels_;
 		}//End switch
 		return {};
 	} //End GetValidationRuleLabels

@@ -1,6 +1,6 @@
 #include "Member.h"
 
-#include <iostream>
+#include "Windows.h"
 
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
@@ -19,7 +19,7 @@ int Member::Load()
 	return 1;
 }//End Load
 
-int Member::Export(PrimaryData* caller)
+int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 {
 	//TODO: Member export functionality
 	//Create JSON Document
@@ -39,7 +39,7 @@ int Member::Export(PrimaryData* caller)
 		//Correctly grab the data in a JSON value for each type
 		switch(field.GetDataType())
 		{
-			case DataType::STRING:
+			case DataType::DATA_TYPE::STRING:
 				{
 					Value stringVal;
 					stringVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
@@ -47,7 +47,7 @@ int Member::Export(PrimaryData* caller)
 				}//End String data handling
 				break;
 
-			case DataType::INTEGER:
+			case DataType::DATA_TYPE::INTEGER:
 				{
 					Value integerVal;
 					int data = strtol(field.GetDataBuffer(), nullptr, 0);
@@ -56,7 +56,7 @@ int Member::Export(PrimaryData* caller)
 				}//End Integer data handling
 				break;
 
-			case DataType::FLOAT:
+			case DataType::DATA_TYPE::FLOAT:
 				{
 					Value floatVal;
 					float data = strtof(field.GetDataBuffer(), nullptr);
@@ -65,7 +65,7 @@ int Member::Export(PrimaryData* caller)
 				}//End Float data handling
 				break;
 
-			case DataType::CHAR:
+			case DataType::DATA_TYPE::CHAR:
 				{
 					Value charVal;
 					charVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
@@ -73,7 +73,7 @@ int Member::Export(PrimaryData* caller)
 				}//End Char data handling
 				break;
 
-			case DataType::BOOLEAN:
+			case DataType::DATA_TYPE::BOOLEAN:
 				{
 					Value booleanVal;
 					booleanVal.SetBool(field.GetBooleanData());
@@ -99,12 +99,36 @@ int Member::Export(PrimaryData* caller)
 		jsonDocument.Accept(writer);
 
 		//Close file
-		return fclose(filePath);
+		int success = fclose(filePath);
+
+		//Output text
+		string text = "Member ";
+		text.append(idBuffer_);
+		text.append(" exported successfully!");
+		outputText->push(text);
+
+		//Get file path exported to
+		text = "File located at: \"";
+		char fullFilePath[MAX_PATH];
+		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+		text.append(std::string(fullFilePath).substr(0, pos));
+		text.append("\" in ");
+		text.append(fileName);
+		outputText->push(text);
+
+		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+
+		//Open the file in an editor
+		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+
+		return success;
 	}//End Exporting functionality
 }//End Export
 
 //Export call for adding a member to a group JSON file
-int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
 {
 	//Get reference to the allocator for adding new objects
 	Document::AllocatorType& allocator = jsonDocument->GetAllocator();
@@ -139,7 +163,7 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 		//Correctly grab the data in a JSON value for each type
 		switch(field.GetDataType())
 		{
-			case DataType::STRING:
+			case DataType::DATA_TYPE::STRING:
 			{
 				Value stringVal;
 				stringVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
@@ -147,7 +171,7 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 			}//End String data handling
 			break;
 
-			case DataType::INTEGER:
+			case DataType::DATA_TYPE::INTEGER:
 			{
 				Value integerVal;
 				int data = strtol(field.GetDataBuffer(), nullptr, 0);
@@ -156,7 +180,7 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 			}//End Integer data handling
 			break;
 
-			case DataType::FLOAT:
+			case DataType::DATA_TYPE::FLOAT:
 			{
 				Value floatVal;
 				float data = strtof(field.GetDataBuffer(), nullptr);
@@ -165,7 +189,7 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 			}//End Float data handling
 			break;
 
-			case DataType::CHAR:
+			case DataType::DATA_TYPE::CHAR:
 			{
 				Value charVal;
 				charVal.SetString(GenericValue<UTF8<>>::StringRefType(field.GetDataBuffer()));
@@ -173,7 +197,7 @@ int Member::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jso
 			}//End Char data handling
 			break;
 
-			case DataType::BOOLEAN:
+			case DataType::DATA_TYPE::BOOLEAN:
 			{
 				Value booleanVal;
 				auto check = *field.GetBooleanData();
@@ -211,14 +235,22 @@ int Member::Delete()
 	return 1;
 }//End Delete
 
-int Member::Validate()
+int Member::Validate(std::queue<std::string>* outputText)
 {
-	std::cout << "Member " << idBuffer_ << " Validating Data..." << std::endl;
+	string text;
+	text.append("Member ");
+	text.append(idBuffer_);
+	text.append(" Validating Data...");
+	outputText->push(text);
 	for (auto& field : fields_)
 	{
-		field.Validate();
+		field.Validate(outputText);
 	}//End for
-	std::cout << "Member " << idBuffer_ << " Validation Complete\n" << std::endl;
+	text.clear();
+	text.append("Member ");
+	text.append(idBuffer_);
+	text.append(" Validation Complete");
+	outputText->push(text);
 	return 1;
 }//End Validate
 
@@ -289,14 +321,16 @@ void Member::RefreshFieldQuantity()
 		fields_.emplace_back(this, *field.GetDataType(), i);
 	}//End for
 
-	for (int i = 0; i < cache.size(); i++)
+	for (auto& cacheField : cache)
 	{
-		if(fields_.size() > i)
+		for (auto& field : fields_)
 		{
-			if(strcmp(fields_.at(i).GetNameAndTypeLabel(), cache.at(i).GetNameAndTypeLabel()) == 0)
+			if(strcmp(field.GetNameAndTypeLabel(), cacheField.GetNameAndTypeLabel()) == 0)
 			{
-				strcpy(fields_.at(i).GetDataBuffer(), cache.at(i).GetDataBuffer());
+				strcpy(field.GetDataBuffer(), cacheField.GetDataBuffer());
+				field.SetDataBufferCurrentSize(*cacheField.GetDataBufferCurrentSize());
+				break;
 			}//End if
-		}//End if
+		}//End for
 	}//End for
 }//End RefreshFieldQuantity

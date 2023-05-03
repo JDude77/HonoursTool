@@ -3,6 +3,8 @@
 #define DATA_INTERFACES
 #include <memory>
 #include <string>
+#include <queue>
+
 #include "../../RapidJSON/document.h"
 class PrimaryData;
 using std::string;
@@ -22,7 +24,7 @@ class ILoad
 class IValidate
 {
 	public:
-	virtual int Validate() = 0;
+	virtual int Validate(std::queue<std::string>* outputText) = 0;
 };
 
 class IDelete
@@ -35,25 +37,25 @@ class IExport
 {
 	public:
 	//Caller pointer determines whether the JSON should be part of a larger JSON file (has caller) or an individual one (null pointer)
-	virtual int Export(PrimaryData* caller = nullptr) = 0;
-	virtual int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) = 0;
+	virtual int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) = 0;
+	virtual int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) = 0;
 };
 
 class PrimaryData : ISave, ILoad, IExport, IDelete
 {
 public:
 	PrimaryData(const int internalID) : internalID_(internalID){}
-	virtual int Save() override = 0;
-	virtual int Load() override = 0;
-	virtual int Delete() override = 0;
-	virtual int Export(PrimaryData* caller = nullptr) override = 0;
-	virtual int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override = 0;
+	int Save() override = 0;
+	int Load() override = 0;
+	int Delete() override = 0;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) override = 0;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override = 0;
 
 	char* GetNameBuffer() { return nameBuffer_; }
 	char* GetIDBuffer() { return idBuffer_; }
 	int* GetNameBufferCurrentLength() { return &nameBufferCurrentLength_; }
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
-	const static int GetBufferMax() { return bufferMax_; }
+	static int GetBufferMax() { return bufferMax_; }
 	int GetInternalID() const { return internalID_; }
 	virtual bool IsEmpty() const { return strlen(idBuffer_) == 0 && strlen(nameBuffer_) == 0; }
 

@@ -1,11 +1,11 @@
 #include "Group.h"
 
-#include <iostream>
-
+#include <Windows.h>
 #include "../Members/Member.h"
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
+#include <ranges>
 using namespace rapidjson;
 
 int Group::Save()
@@ -20,15 +20,23 @@ int Group::Load()
 	return 1;
 }//End Load
 
-int Group::Validate()
+int Group::Validate(std::queue<std::string>* outputText)
 {
 	//TODO: Group Validate functionality extended
-	std::cout << "Group " << idBuffer_ << " Validating All Members..." << std::endl << std::endl;
+	string text;
+	text.append("Group ");
+	text.append(idBuffer_);
+	text.append(" Validating All Members...");
+	outputText->push(text);
 	for (const auto& member : members_ | std::views::values)
 	{
-		member->Validate();
+		member->Validate(outputText);
 	}//End for
-	std::cout << "Group " << idBuffer_ << " Validation Complete" << std::endl;
+	text.clear();
+	text.append("Group ");
+	text.append(idBuffer_);
+	text.append(" Validation Complete");
+	outputText->push(text);
 	return 1;
 }//End Validate
 
@@ -43,11 +51,10 @@ int Group::Delete()
 	return 1;
 }//End Delete
 
-int Group::Export(PrimaryData* caller)
+int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 {
-	//TODO: Group Export functionality
 	//Create the document which all members will be added to
-	shared_ptr<Document> jsonDocument = std::make_shared<Document>();
+	const shared_ptr<Document> jsonDocument = std::make_shared<Document>();
 	jsonDocument->SetObject();
 	Document::AllocatorType& jsonDocAlloc = jsonDocument->GetAllocator();
 
@@ -60,7 +67,7 @@ int Group::Export(PrimaryData* caller)
 	for(const auto& member : members_ | std::views::values)
 	{
 		//Add the member to the document object
-		member->Export(this, jsonDocument);
+		member->Export(outputText, this, jsonDocument);
 	}//End for
 
 	//By here we're ready to just export a JSON document as per usual
@@ -80,11 +87,35 @@ int Group::Export(PrimaryData* caller)
 		jsonDocument->Accept(writer);
 
 		//Close file
-		return fclose(filePath);
+		const int success = fclose(filePath);
+
+		//Output text
+		string text = "Group ";
+		text.append(idBuffer_);
+		text.append(" exported successfully!");
+		outputText->push(text);
+
+		//Get file path exported to
+		text = "File located at: \"";
+		char fullFilePath[MAX_PATH];
+		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+		text.append(std::string(fullFilePath).substr(0, pos));
+		text.append("\" in ");
+		text.append(fileName);
+		outputText->push(text);
+
+		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+
+		//Open the file in an editor
+		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+
+		return success;
 	}//End Exporting functionality
 }//End Export
 
-int Group::Export(PrimaryData* caller, std::shared_ptr<Document> jsonDocument)
+int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<Document> jsonDocument)
 {
 	//Nothing to do here for now - this version is mainly just used for calling on members/templates in groups
 	return -1;

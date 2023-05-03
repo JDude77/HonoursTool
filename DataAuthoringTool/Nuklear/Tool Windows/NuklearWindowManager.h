@@ -189,6 +189,61 @@ private:
 			}//End for
 		}//End if
 	}//End ClearDeletedCharacters
+	bool DeleteEmptyDataEntriesFromDataManager(nk_context* nuklearContext, NuklearWindow* nuklearWindow, const shared_ptr<PrimaryData> windowData, string id, bool& value)
+	{
+		//After data processing, check if the window is closed
+		if (nk_window_is_closed(nuklearContext, id.c_str()) || nk_window_is_hidden(nuklearContext, id.c_str()))
+		{
+			//Check if the window's data is a valid member
+			if (const auto memberData = dynamic_pointer_cast<Member>(windowData); memberData != nullptr)
+			{
+				//If the data is empty
+				if (memberData->IsEmpty())
+				{
+					//Remove the empty item from the data manager to not clog up the system with blank members
+					dataManager_->RemoveInstanceFromDataMap(*memberData);
+				}//End if
+				//Remove the member window from the active window list
+				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+				nk_end(nuklearContext);
+				value = false;
+				return true;
+			}//End if
+
+			//Check if the window's data is a valid template
+			if (const auto templateData = dynamic_pointer_cast<Template>(windowData); templateData != nullptr)
+			{
+				//If the data is empty
+				if (templateData->IsEmpty())
+				{
+					//Remove the empty item from the data manager to not clog up the system with blank templates
+					dataManager_->RemoveInstanceFromDataMap(*templateData);
+				}//End if
+				//Remove the template window from the active window list
+				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+				nk_end(nuklearContext);
+				value = false;
+				return true;
+			}//End if
+
+			//Check if the window's data is a valid template
+			if (const auto groupData = dynamic_pointer_cast<Group>(windowData); groupData != nullptr)
+			{
+				//If the data is empty
+				if (groupData->IsEmpty())
+				{
+					//Remove the empty item from the data manager to not clog up the system with blank templates
+					dataManager_->RemoveInstanceFromDataMap(*groupData);
+				}//End if
+				//Remove the template window from the active window list
+				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
+				nk_end(nuklearContext);
+				value = false;
+				return true;
+			}//End if
+		}//End if
+		return false;
+	}//End DeleteEmptyDataEntriesFromDataManager
 
 	//Custom Header Elements
 	void RenderTemplateHeaderDropdown(nk_context* nuklearContext, const shared_ptr<Member>& memberData) const
@@ -301,7 +356,7 @@ private:
 		nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 		nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_TEMPLATE_WINDOW_BUTTON], "Open New Template Window"))
-			CreateNewWindow("Template Window", TEMPLATE_WINDOW);
+			CreateNewWindow("Template Window", WINDOW_TYPE::TEMPLATE_WINDOW);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 		nk_label(nuklearContext, "Templates", NK_TEXT_LEFT);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
@@ -312,7 +367,7 @@ private:
 		nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 		nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_MEMBER_WINDOW_BUTTON], "Open New Member Window"))
-			CreateNewWindow("Member Window", MEMBER_WINDOW);
+			CreateNewWindow("Member Window", WINDOW_TYPE::MEMBER_WINDOW);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 		nk_label(nuklearContext, "Members", NK_TEXT_LEFT);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
@@ -323,7 +378,7 @@ private:
 		nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 6.0f, 3);
 		nk_layout_space_push(nuklearContext, nk_rect(0.01f, 0.1f, 0.45f, 0.45f));
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::OPEN_GROUP_WINDOW_BUTTON], "Open New Group Window"))
-			CreateNewWindow("Group Window", GROUP_WINDOW);
+			CreateNewWindow("Group Window", WINDOW_TYPE::GROUP_WINDOW);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.05f, 0.55f, 0.25f));
 		nk_label(nuklearContext, "Groups", NK_TEXT_LEFT);
 		nk_layout_space_push(nuklearContext, nk_rect(0.475f, 0.275f, 0.55f, 0.45f));
@@ -345,7 +400,7 @@ private:
 
 				//Button for each other Template
 				if(nk_button_label(nuklearContext, templateData->GetIDBuffer()))
-					CreateNewWindow("Template Window", TEMPLATE_WINDOW, templateData, nuklearContext);
+					CreateNewWindow("Template Window", WINDOW_TYPE::TEMPLATE_WINDOW, templateData, nuklearContext);
 			}//End for
 			nk_group_end(nuklearContext);
 		}//End if
@@ -359,7 +414,7 @@ private:
 			{
 				//Button for each other Member
 				if(nk_button_label(nuklearContext, memberData->GetIDBuffer()))
-					CreateNewWindow("Member Window", MEMBER_WINDOW, memberData, nuklearContext);
+					CreateNewWindow("Member Window", WINDOW_TYPE::MEMBER_WINDOW, memberData, nuklearContext);
 			}//End for
 			nk_group_end(nuklearContext);
 		}//End if
@@ -373,14 +428,14 @@ private:
 			{
 				//Button for each other Member
 				if(nk_button_label(nuklearContext, groupData->GetIDBuffer()))
-					CreateNewWindow("Group Window", GROUP_WINDOW, groupData, nuklearContext);
+					CreateNewWindow("Group Window", WINDOW_TYPE::GROUP_WINDOW, groupData, nuklearContext);
 			}//End for
 			nk_group_end(nuklearContext);
 		}//End if
 
 		nk_layout_space_end(nuklearContext);
 	}//End RenderLandingBody
-	void RenderMemberBody(nk_context* nuklearContext, const shared_ptr<Member>& memberData)
+	void RenderMemberBody(nk_context* nuklearContext, const shared_ptr<Member>& memberData, NuklearWindow* nuklearWindow)
 	{
 		for (int i = 0; i < memberData->GetNumberOfFields(); i++)
 		{
@@ -390,36 +445,45 @@ private:
 			//Name of field label followed by type
 			nk_label(nuklearContext, field->GetNameAndTypeLabel(), NK_LEFT);
 
-			nk_layout_row_dynamic(nuklearContext, 24, 3);
 			//Input field for data
 			switch (field->GetDataType())
 			{
-			case DataType::STRING:
+			case DataType::DATA_TYPE::STRING:
+				nk_layout_row_dynamic(nuklearContext, 24, 3);
 				nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_default);
 				break;
 
-			case DataType::INTEGER:
+			case DataType::DATA_TYPE::INTEGER:
+				nk_layout_row_dynamic(nuklearContext, 24, 3);
 				nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_decimal);
 				break;
 
-			case DataType::FLOAT:
+			case DataType::DATA_TYPE::FLOAT:
+				nk_layout_row_dynamic(nuklearContext, 24, 3);
 				nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), *field->GetDataBufferMaxSize(), nk_filter_float);
 				break;
 
-			case DataType::CHAR:
+			case DataType::DATA_TYPE::CHAR:
+				nk_layout_row_dynamic(nuklearContext, 24, 3);
 				nk_edit_string(nuklearContext, NK_EDIT_SIMPLE, field->GetDataBuffer(), field->GetDataBufferCurrentSize(), 2, nk_filter_default);
 				break;
 
-			case DataType::BOOLEAN:
-				{const char* label = *field->GetBooleanData() ? "TRUE" : "FALSE";
-					nk_checkbox_label(nuklearContext, label, reinterpret_cast<nk_bool*>(field->GetBooleanData())); }
+			case DataType::DATA_TYPE::BOOLEAN:
+				{
+					nk_layout_row_dynamic(nuklearContext, 24, 1);
+					const char* label = *field->GetBooleanData() ? "TRUE" : "FALSE";
+					nk_checkbox_label(nuklearContext, label, reinterpret_cast<nk_bool*>(field->GetBooleanData()));
+				}//End Boolean data handling
 				break;
 
-			case DataType::NONE:
-				nk_label(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.", NK_LEFT);
+			case DataType::DATA_TYPE::NONE:
+				{
+					nk_layout_row_dynamic(nuklearContext, 32, 1);
+					nk_label_wrap(nuklearContext, "ERROR: This field does not have a type! Please go to the template and choose a data type for this field.");
+				}//End None hadnling
 			}//End switch
-
-			if (field->GetDataType() != DataType::BOOLEAN && field->GetDataType() != DataType::NONE)
+			
+			if (field->GetDataType() != DataType::DATA_TYPE::BOOLEAN && field->GetDataType() != DataType::DATA_TYPE::NONE)
 			{
 				ClearDeletedCharacters(field->GetDataBuffer(), *field->GetDataBufferCurrentSize());
 
@@ -427,18 +491,16 @@ private:
 				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "CLEAR FIELD")) field->Delete();
 
 				//Validate button for field
-				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE")) field->Validate();
+				if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE")) 
+				{
+					nuklearWindow->ClearSubFooterText();
+					field->Validate(nuklearWindow->GetSubFooterText());
+				}//End if
 			}//End if
-			else
-			{
-				//Two blank labels to fill out columns
-				nk_label(nuklearContext, "", NK_LEFT);
-				nk_label(nuklearContext, "", NK_LEFT);
-			}//End else
 		}//End for
 		dataManager_->UpdateInstance(memberData);
 	}
-	bool RenderGroupBody(nk_context* nuklearContext, const shared_ptr<Group>& groupData, bool& value)
+	bool RenderGroupBody(nk_context* nuklearContext, const shared_ptr<Group>& groupData, NuklearWindow* nuklearWindow, bool& value)
 	{
 		static int activeTab = 0;
 
@@ -474,7 +536,8 @@ private:
 
 			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE"))
 			{
-				member->Validate();
+				nuklearWindow->ClearSubFooterText();
+				member->Validate(nuklearWindow->GetSubFooterText());
 			}//End if
 			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "REMOVE"))
 			{
@@ -591,7 +654,7 @@ private:
 			}//End if
 			//Validation rules multi-select combo box
 			//Boolean type and none type have no validation rules
-			if (*field->GetDataType() != DataType::NONE && *field->GetDataType() != DataType::BOOLEAN)
+			if (*field->GetDataType() != DataType::DATA_TYPE::NONE && *field->GetDataType() != DataType::DATA_TYPE::BOOLEAN)
 			{
 				if (nk_combo_begin_label(nuklearContext, "Click To Choose Validation Rules", nk_vec2(500, 300)))
 				{
@@ -802,7 +865,7 @@ private:
 	}//End RenderTemplateBody
 
 	//Window Render Sections
-	bool RenderWindowHeader(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
+	bool RenderWindowHeader(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* nuklearWindow)
 	{
 		nk_layout_row_dynamic(nuklearContext, 24, 4);
 		//Name
@@ -823,7 +886,11 @@ private:
 			nk_layout_row_dynamic(nuklearContext, 24, 2);
 			RenderTemplateHeaderDropdown(nuklearContext, memberData);
 			//Validate All Fields button
-			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE ALL")) memberData->Validate();
+			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE ALL"))
+			{
+				nuklearWindow->ClearSubFooterText();
+				memberData->Validate(nuklearWindow->GetSubFooterText());
+			}//End if
 		}//End if
 
 		//If the data we're handling is a group
@@ -831,7 +898,11 @@ private:
 		{
 			//Validate All Members button
 			nk_layout_row_dynamic(nuklearContext, 24, 1);
-			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE")) groupData->Validate();
+			if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::VALIDATE_BUTTON], "VALIDATE"))
+			{
+				nuklearWindow->ClearSubFooterText();
+				groupData->Validate(nuklearWindow->GetSubFooterText());
+			}//End if
 		}//End else if
 
 		return true;
@@ -847,13 +918,13 @@ private:
 		//MEMBER
 		else if (const auto memberData = dynamic_pointer_cast<Member>(windowData))
 		{
-			RenderMemberBody(nuklearContext, memberData);
+			RenderMemberBody(nuklearContext, memberData, currentWindow);
 		}//End else if
 		
 		//GROUP
 		else if (const auto groupData = dynamic_pointer_cast<Group>(windowData))
 		{
-			if (bool value; RenderGroupBody(nuklearContext, groupData, value))
+			if (bool value; RenderGroupBody(nuklearContext, groupData, currentWindow, value))
 			{
 				lastWindowBeforeRefresh_.clear();
 				lastWindowBeforeRefresh_.append(currentWindow->GetWindowTitle());
@@ -872,7 +943,7 @@ private:
 
 		return true;
 	}//End RenderWindowBody
-	bool RenderWindowFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData)
+	bool RenderWindowFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* nuklearWindow)
 	{
 		//Customise label to show what exact type is being exported to lower confusion
 		string exportLabel;
@@ -884,7 +955,10 @@ private:
 		nk_layout_row_dynamic(nuklearContext, 24, 1);
 		//if (nk_button_label(nuklearContext, "SAVE")) windowData->Save();
 		//if (nk_button_label(nuklearContext, "LOAD")) windowData->Load();
-		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::EXPORT_BUTTON], exportLabel.c_str())) windowData->Export(windowData.get());
+		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::EXPORT_BUTTON], exportLabel.c_str())) 
+		{
+			windowData->Export(nuklearWindow->GetSubFooterText(),windowData.get());
+		}//End if
 		if (nk_button_label_styled(nuklearContext, &buttonStyleMap_[BUTTON_STYLE::DELETE_BUTTON], "DELETE"))
 		{
 			dataManager_->DeleteInstanceAndCleanUpConnections(windowData);
@@ -893,6 +967,32 @@ private:
 
 		return true;
 	}//End RenderWindowFooter
+	bool RenderWindowSubFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData,  std::queue<string>* subfooterText)
+	{
+		//Subfooter text is currently always going to be the validation or export result
+		if(!subfooterText->empty())
+		{
+			nk_layout_space_begin(nuklearContext, NK_DYNAMIC, *windowHeight_ / 3.0f, 1);
+			nk_layout_space_push(nuklearContext, nk_rect(0.0f, 0.0f, 1.0f, 1.0f));
+			if(nk_group_begin(nuklearContext, "Output Text", NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+			{
+				std::queue<string> temp;
+				nk_layout_row_dynamic(nuklearContext, 24, 1);
+				const int startSize = subfooterText->size();
+				for (int i = 0; i < startSize; i++)
+				{
+					nk_label(nuklearContext, subfooterText->front().c_str(), NK_TEXT_LEFT);
+					temp.push(subfooterText->front());
+					subfooterText->pop();
+				}//End for
+				subfooterText->swap(temp);
+				nk_group_end(nuklearContext);
+			}//End if
+			nk_layout_space_end(nuklearContext);
+		}//End if
+
+		return true;
+	}//End Render Window Sub-Footer
 
 	bool RenderWindow(nk_context* nuklearContext, NuklearWindow* nuklearWindow)
 	{
@@ -915,7 +1015,7 @@ private:
 				//Render Header
 				if (nuklearWindow->GetHasHeader())
 				{
-					if (!RenderWindowHeader(nuklearContext, windowData)) return false;
+					if (!RenderWindowHeader(nuklearContext, windowData, nuklearWindow)) return false;
 				}//End if
 
 				//Render Body
@@ -924,7 +1024,13 @@ private:
 				//Render Footer
 				if (nuklearWindow->GetHasFooter())
 				{
-					if (!RenderWindowFooter(nuklearContext, windowData)) return false;
+					if (!RenderWindowFooter(nuklearContext, windowData, nuklearWindow)) return false;
+				}//End if
+
+				//Render Sub-Footer
+				if (nuklearWindow->GetHasSubFooter())
+				{
+					if (!RenderWindowSubFooter(nuklearContext, windowData, nuklearWindow->GetSubFooterText())) return false;
 				}//End if
 			}//End nk_begin
 
@@ -934,7 +1040,7 @@ private:
 		}//End if
 
 		//Landing window has no data, as it is essentially just buttons to open subwindows
-		else if (nuklearWindow->GetWindowType() == LANDING)
+		else if (nuklearWindow->GetWindowType() == WINDOW_TYPE::LANDING)
 		{
 			if (nk_begin(nuklearContext, nuklearWindow->GetWindowTitle(), nk_rect(0, 0, *windowWidth_, *windowHeight_), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
 			{
@@ -946,62 +1052,6 @@ private:
 		return true;
 	}//End RenderWindow
 
-	bool DeleteEmptyDataEntriesFromDataManager(nk_context* nuklearContext, NuklearWindow* nuklearWindow, const shared_ptr<PrimaryData> windowData, string id, bool& value)
-	{
-		//After data processing, check if the window is closed
-		if (nk_window_is_closed(nuklearContext, id.c_str()) || nk_window_is_hidden(nuklearContext, id.c_str()))
-		{
-			//Check if the window's data is a valid member
-			if (const auto memberData = dynamic_pointer_cast<Member>(windowData); memberData != nullptr)
-			{
-				//If the data is empty
-				if (memberData->IsEmpty())
-				{
-					//Remove the empty item from the data manager to not clog up the system with blank members
-					dataManager_->RemoveInstanceFromDataMap(*memberData);
-				}//End if
-				//Remove the member window from the active window list
-				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-				nk_end(nuklearContext);
-				value = false;
-				return true;
-			}//End if
-
-			//Check if the window's data is a valid template
-			if (const auto templateData = dynamic_pointer_cast<Template>(windowData); templateData != nullptr)
-			{
-				//If the data is empty
-				if (templateData->IsEmpty())
-				{
-					//Remove the empty item from the data manager to not clog up the system with blank templates
-					dataManager_->RemoveInstanceFromDataMap(*templateData);
-				}//End if
-				//Remove the template window from the active window list
-				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-				nk_end(nuklearContext);
-				value = false;
-				return true;
-			}//End if
-
-			//Check if the window's data is a valid template
-			if (const auto groupData = dynamic_pointer_cast<Group>(windowData); groupData != nullptr)
-			{
-				//If the data is empty
-				if (groupData->IsEmpty())
-				{
-					//Remove the empty item from the data manager to not clog up the system with blank templates
-					dataManager_->RemoveInstanceFromDataMap(*groupData);
-				}//End if
-				//Remove the template window from the active window list
-				activeNuklearWindows_.erase(std::ranges::find(activeNuklearWindows_, nuklearWindow));
-				nk_end(nuklearContext);
-				value = false;
-				return true;
-			}//End if
-		}//End if
-		return false;
-	}//End DeleteEmptyDataEntriesFromDataManager
-
 public:
 	NuklearWindowManager(shared_ptr<DataManager> dataManager, const nk_context* nuklearContext) : dataManager_(std::move(dataManager))
 	{
@@ -1009,7 +1059,7 @@ public:
 		CreateStyles(nuklearContext);
 
 		//Create landing window
-		CreateNewWindow("Data Authoring Tool", LANDING);
+		CreateNewWindow("Data Authoring Tool", WINDOW_TYPE::LANDING);
 	}//End constructor
 
 	bool RenderAllActiveWindows(nk_context* nuklearContext)
@@ -1036,53 +1086,53 @@ public:
 		{
 			switch (activeNuklearWindow->GetWindowType())
 			{
-			case MEMBER_WINDOW:
+			case WINDOW_TYPE::MEMBER_WINDOW:
 				if (strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
 				{
 					memberWindowNoID = true;
 				}//End if
 				break;
-			case GROUP_WINDOW:
+			case WINDOW_TYPE::GROUP_WINDOW:
 				if (strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
 				{
 					groupWindowNoID = true;
 				}//End if
 				break;
-			case TEMPLATE_WINDOW:
+			case WINDOW_TYPE::TEMPLATE_WINDOW:
 				if (strcmp(activeNuklearWindow->GetWindowData()->GetIDBuffer(), "") == 0)
 				{
 					templateWindowNoID = true;
 				}//End if
 				break;
 
-			case NONE: case LANDING: default: continue;
+			case WINDOW_TYPE::NONE: case WINDOW_TYPE::LANDING: default: continue;
 			}//End switch
 		}//End for
 
 		switch (windowType)
 		{
-		case MEMBER_WINDOW:
+		case WINDOW_TYPE::MEMBER_WINDOW:
 			if (!memberWindowNoID)
 			{
 				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Member>(Member(DataManager::GetInternalID(true))), windowTitle));
 			}//End if
 			break;
-		case GROUP_WINDOW:
+		case WINDOW_TYPE::GROUP_WINDOW:
 			if (!groupWindowNoID)
 			{
 				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Group>(Group(DataManager::GetInternalID(true))), windowTitle));
 			}//End if
 			break;
-		case TEMPLATE_WINDOW:
+		case WINDOW_TYPE::TEMPLATE_WINDOW:
 			if (!templateWindowNoID)
 			{
 				activeNuklearWindows_.push_back(new NuklearWindow(windowType, dataManager_, make_shared<Template>(Template(DataManager::GetInternalID(true))), windowTitle));
 			}//End if
 			break;
-		case LANDING:
+		case WINDOW_TYPE::LANDING:
 			activeNuklearWindows_.push_back(new NuklearWindow(windowType, nullptr));
 			break;
-		case NONE: return false;
+		case WINDOW_TYPE::NONE: return false;
 		}//End switch
 
 		return true;
@@ -1095,7 +1145,7 @@ public:
 
 		for (auto it = activeNuklearWindows_.begin(); it != activeNuklearWindows_.end(); ++it)
 		{
-			if((*it)->GetWindowType() != LANDING && (*it)->GetWindowTitle() == windowTitle && (*it)->GetWindowData() == windowData)
+			if((*it)->GetWindowType() != WINDOW_TYPE::LANDING && (*it)->GetWindowTitle() == windowTitle && (*it)->GetWindowData() == windowData)
 			{
 				//Move the window to render on top
 				string id;

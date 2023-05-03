@@ -21,8 +21,8 @@ public:
 	Template(const int internalID): PrimaryData(internalID){}
 	int Save() override;
 	int Load() override;
-	int Export(PrimaryData* caller = nullptr) override;
-	int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) override;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
 	int Delete() override;
 	bool IsEmpty() const override { return PrimaryData::IsEmpty() && fields_.empty(); }
 

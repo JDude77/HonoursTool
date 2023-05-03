@@ -41,8 +41,8 @@ private:
 
 	Template* parentTemplate_;
 	string id_;
-	DataType::DATA_TYPE dataType_ = DataType::NONE;
-	int typeInt_ = DataType::NONE;
+	DataType::DATA_TYPE dataType_ = DataType::DATA_TYPE::NONE;
+	int typeInt_ = static_cast<int>(DataType::DATA_TYPE::NONE);
 	vector<std::pair<RULES, int>> validationRules_;
 	ValidationRuleParameter validationRuleParameters_;
 };

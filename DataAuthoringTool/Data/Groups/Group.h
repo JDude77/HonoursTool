@@ -1,11 +1,7 @@
 #pragma once
 #ifndef GROUP
 #define GROUP
-
-#include <ranges>
-
 #include "../Shared/DataInterfaces.h"
-
 #include <string>
 using std::string;
 #include <vector>
@@ -26,10 +22,10 @@ public:
 	Group(const int internalID) : PrimaryData(internalID){}
 	int Save() override;
 	int Load() override;
-	int Validate() override;
+	int Validate(std::queue<std::string>* outputText) override;
 	int Delete() override;
-	int Export(PrimaryData* caller = nullptr) override;
-	int Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) override;
+	int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override;
 	[[nodiscard]] bool IsEmpty() const override {  return PrimaryData::IsEmpty() && members_.empty() && templates_.empty(); }
 
 	[[nodiscard]] int GetNumberOfTemplates() const { return templates_.size(); }

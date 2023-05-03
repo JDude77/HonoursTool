@@ -15,15 +15,17 @@ MemberField::MemberField(Member* parentMember, const DataType::DATA_TYPE dataTyp
 	field_ = std::make_shared<Field>();
 }//End Constructor
 
-int MemberField::Validate()
+int MemberField::Validate(std::queue<std::string>* outputText)
 {
-	if(dataType_ == DataType::BOOLEAN || dataType_ == DataType::NONE) return 1;
+	if(dataType_ == DataType::DATA_TYPE::BOOLEAN || dataType_ == DataType::DATA_TYPE::NONE) return 1;
 
 	const auto templateField = parentMember_->GetType()->GetFieldAtIndex(fieldIndex_);
 	const auto validationRules = templateField->GetValidationRules();
 	const auto validationParameters = templateField->GetValidationRuleParameters();
 
 	string text = GetNameAndTypeLabel();
+	outputText->push(text);
+	text.clear();
 	int activeTests = 0;
 	int testsPassed = 0;
 	bool presenceRuleActive = false;
@@ -39,13 +41,12 @@ int MemberField::Validate()
 			if(rule == ALL_PRESENCE || (rule != ALL_PRESENCE && !presenceRuleActive || presenceRuleActive && presenceRulePassed))
 			{
 				bool success;
-				text.append("\n");
 				switch (rule)
 				{
 					case ALL_PRESENCE:
 						presenceRuleActive = true;
 						success = ValidationFunction::Presence(GetDataBuffer());
-						text.append("\tPresence Test was ");
+						text.append("     Presence Test was ");
 						if(success)
 						{
 							text.append("successful! (Data Is Present)");
@@ -56,7 +57,7 @@ int MemberField::Validate()
 
 					case STRING_MAX_LENGTH:
 						success = ValidationFunction::StringMaxLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tString Max Length was ");
+						text.append("     String Max Length was ");
 						if(success) text.append("successful! (Text Is Shorter Than Max Length Of ");
 						else text.append("unsuccessful! (Text Is Longer Than Max Length Of ");
 						text.append(validationParameters->GetBuffer(rule));
@@ -65,7 +66,7 @@ int MemberField::Validate()
 
 					case STRING_MIN_LENGTH:
 						success = ValidationFunction::StringMinLength(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tString Min Length Test was ");
+						text.append("     String Min Length Test was ");
 						if(success) text.append("successful! (Text Is Longer Than Min Length Of ");
 						else text.append("unsuccessful! (Text Is Shorter Than Min Length Of ");
 						text.append(validationParameters->GetBuffer(rule));
@@ -74,7 +75,7 @@ int MemberField::Validate()
 
 					case STRING_STARTS_WITH_SUBSTRING:
 						success = ValidationFunction::StringStartsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tString Starts With Substring Test was ");
+						text.append("     String Starts With Substring Test was ");
 						if(success) text.append("successful! (Text Starts With Substring: \"");
 						else text.append("unsuccessful! (Text Does Not Start With Substring: \"");
 						text.append(validationParameters->GetBuffer(rule));
@@ -83,7 +84,7 @@ int MemberField::Validate()
 
 					case STRING_ENDS_WITH_SUBSTRING:
 						success = ValidationFunction::StringEndsWithSubstring(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tString Ends With Substring Test was ");
+						text.append("     String Ends With Substring Test was ");
 						if(success) text.append("successful! (Text Ends With Substring: \"");
 						else text.append("unsuccessful! (Text Does Not End With Substring: \"");
 						text.append(validationParameters->GetBuffer(rule));
@@ -92,7 +93,7 @@ int MemberField::Validate()
 
 					case NUMBER_IS_NOT_NEGATIVE:
 						success = ValidationFunction::NumberIsNotNegative(GetDataBuffer());
-						text.append("\tNumber Is Not Negative Test was ");
+						text.append("     Number Is Not Negative Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -109,7 +110,7 @@ int MemberField::Validate()
 
 					case NUMBER_IS_NEGATIVE:
 						success = ValidationFunction::NumberIsNegative(GetDataBuffer());
-						text.append("\tNumber Is Negative Test was ");
+						text.append("     Number Is Negative Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -126,7 +127,7 @@ int MemberField::Validate()
 
 					case NUMBER_IS_NOT_ZERO:
 						success = ValidationFunction::NumberIsNotZero(GetDataBuffer());
-						text.append("\tNumber Is Not Zero Test was ");
+						text.append("     Number Is Not Zero Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -143,7 +144,7 @@ int MemberField::Validate()
 
 					case NUMBER_IS_LESS_THAN:
 						success = ValidationFunction::NumberIsLessThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tNumber Is Less Than Test was ");
+						text.append("     Number Is Less Than Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -164,7 +165,7 @@ int MemberField::Validate()
 
 					case NUMBER_IS_GREATER_THAN:
 						success = ValidationFunction::NumberIsGreaterThan(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tNumber Is Greater Than Test was ");
+						text.append("     Number Is Greater Than Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -185,7 +186,7 @@ int MemberField::Validate()
 
 					case INTEGER_DIVISIBLE_BY_INTEGER:
 						success = ValidationFunction::IntegerDivisibleByInteger(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tInteger Divisible By Other Integer Test was ");
+						text.append("     Integer Divisible By Other Integer Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Number ");
@@ -205,7 +206,7 @@ int MemberField::Validate()
 						break;
 					case CHAR_IS_ONE_OF_CHARACTER_SET:
 						success = ValidationFunction::CharIsOneOfCharacterSet(GetDataBuffer(), validationParameters->GetBuffer(rule));
-						text.append("\tCharacter Is One Of Set Test was ");
+						text.append("     Character Is One Of Set Test was ");
 						if(success)
 						{
 							text.append("successful! (Provided Character ");
@@ -226,13 +227,18 @@ int MemberField::Validate()
 					case NA: default: success = true;
 				}//End switch
 				if(success) ++testsPassed;
-				std::cout << text;
+				outputText->push(text);
 				text.clear();
 			}//End if
 		}//End if
 	}//End for
 
-	std::cout << std::endl << '\t' << testsPassed << '/' << activeTests << " validation tests passed!" << std::endl;
+	string total;
+	total.append(std::to_string(testsPassed));
+	total.append("/");
+	total.append(std::to_string(activeTests));
+	total.append(" validation tests passed!");
+	outputText->push(total);
 
 	return 1;
 }//End Validate
@@ -250,7 +256,7 @@ const char* MemberField::GetNameAndTypeLabel() const
 	string nameAndType;
 	nameAndType.append(fieldName_);
 	nameAndType.append(" - ");
-	nameAndType.append(DataType::typeLabels_[dataType_]);
+	nameAndType.append(DataType::typeLabels_[static_cast<int>(dataType_)]);
 	const auto size = nameAndType.length();
 	const auto nameAndTypeArray = new char[size + 1];
 	strcpy(nameAndTypeArray, nameAndType.c_str());
@@ -272,7 +278,7 @@ const char* MemberField::GetName() const
 const char* MemberField::GetTypeLabel() const
 {
 	string type;
-	type.append(DataType::typeLabels_[dataType_]);
+	type.append(DataType::typeLabels_[static_cast<int>(dataType_)]);
 	const auto size = type.length();
 	const auto typeArray = new char[size + 1];
 	strcpy(typeArray, type.c_str());
@@ -302,8 +308,8 @@ void MemberField::RefreshType()
 	//If there is data in the buffer, check for type compatibility
 	switch(dataType_)
 	{
-		case DataType::STRING: 
-			if(newType == DataType::CHAR)
+		case DataType::DATA_TYPE::STRING: 
+			if(newType == DataType::DATA_TYPE::CHAR)
 			{
 				clearAll = false;
 				//Take the first character of the old data for the char switch
@@ -313,15 +319,15 @@ void MemberField::RefreshType()
 				field_->dataBufferCurrentSize_ = 2;
 			}//End if
 			break;
-		case DataType::INTEGER:
-			if(newType == DataType::FLOAT)
+		case DataType::DATA_TYPE::INTEGER:
+			if(newType == DataType::DATA_TYPE::FLOAT)
 			{
 				//Leave the data as is, it'll be fine
 				clearAll = false;
 			}//End if
 			break;
-		case DataType::FLOAT:
-			if(newType == DataType::INTEGER)
+		case DataType::DATA_TYPE::FLOAT:
+			if(newType == DataType::DATA_TYPE::INTEGER)
 			{
 				//Stringify for easier function use
 				string data = field_->dataBuffer_;
@@ -337,14 +343,14 @@ void MemberField::RefreshType()
 				}//End if
 			}//End if
 			break;
-		case DataType::CHAR:
-			if(newType == DataType::STRING)
+		case DataType::DATA_TYPE::CHAR:
+			if(newType == DataType::DATA_TYPE::STRING)
 			{
 				clearAll = false;
 			}//End if
 			break;
 
-		case DataType::BOOLEAN: case DataType::NONE: default: ;
+		case DataType::DATA_TYPE::BOOLEAN: case DataType::DATA_TYPE::NONE: default: ;
 	}//End switch
 
 	if(clearAll)

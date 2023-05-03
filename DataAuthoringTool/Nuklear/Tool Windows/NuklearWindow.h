@@ -2,9 +2,11 @@
 #ifndef NUKLEAR_WINDOW
 #define NUKLEAR_WINDOW
 #include <memory>
+#include <queue>
+#include <string>
 using std::shared_ptr;
 
-enum WINDOW_TYPE
+enum struct WINDOW_TYPE
 {
 	NONE = -1,
 	MEMBER_WINDOW,
@@ -24,13 +26,17 @@ struct NuklearWindow
 	[[nodiscard]] const char* GetWindowTitle() const { return windowTitle_; }
 	shared_ptr<PrimaryData> GetWindowData() { return windowData_; }
 	WINDOW_TYPE GetWindowType() const { return windowType_; }
+	std::queue<std::string>* GetSubFooterText() const { return subFooterText_.get(); }
 	bool GetHasHeader() const { return hasHeader_; }
 	bool GetHasFooter() const { return hasFooter_; }
+	bool GetHasSubFooter() const { return hasSubFooter_; }
+	void ClearSubFooterText() const { while(!subFooterText_->empty()) subFooterText_->pop(); }
 
 private:
-	bool hasHeader_, hasFooter_;
+	bool hasHeader_, hasFooter_, hasSubFooter_;
 	shared_ptr<PrimaryData> windowData_ = nullptr;
 	const char* windowTitle_;
-	WINDOW_TYPE windowType_ = NONE;
+	std::unique_ptr<std::queue<std::string>> subFooterText_ = std::make_unique<std::queue<std::string>>();
+	WINDOW_TYPE windowType_ = WINDOW_TYPE::NONE;
 };
 #endif

@@ -1,5 +1,6 @@
 #include "Template.h"
 
+#include "Windows.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
 using namespace rapidjson;
@@ -25,7 +26,7 @@ int Template::Load()
 	return 1;
 }//End Load (Template)
 
-int Template::Export(PrimaryData* caller)
+int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 {
 	//TODO: Template Export functionality
 	//Create JSON document
@@ -50,27 +51,27 @@ int Template::Export(PrimaryData* caller)
 		//Get correct type string for field
 		switch(*field.GetDataType())
 		{
-			case DataType::STRING:
+			case DataType::DATA_TYPE::STRING:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("string"));
 				break;
 
-			case DataType::INTEGER:
+			case DataType::DATA_TYPE::INTEGER:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("integer"));
 				break;
 
-			case DataType::FLOAT:
+			case DataType::DATA_TYPE::FLOAT:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("float"));
 				break;
 
-			case DataType::CHAR:
+			case DataType::DATA_TYPE::CHAR:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("char"));
 				break;
 
-			case DataType::BOOLEAN:
+			case DataType::DATA_TYPE::BOOLEAN:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("boolean"));
 				break;
 
-			case DataType::NONE: default:
+			case DataType::DATA_TYPE::NONE: default:
 				typeVal.SetString(GenericValue<UTF8<>>::StringRefType("NONE"));
 		}//End switch
 		jsonField.AddMember(nameVal.Move(), typeVal.Move(), documentAllocator);
@@ -175,12 +176,36 @@ int Template::Export(PrimaryData* caller)
 		jsonDocument.Accept(writer);
 
 		//Close file
-		return fclose(filePath);
+		int success = fclose(filePath);
+
+		//Output text
+		string text = "Template ";
+		text.append(idBuffer_);
+		text.append(" exported successfully!");
+		outputText->push(text);
+
+		//Get file path exported to
+		text = "File located at: \"";
+		char fullFilePath[MAX_PATH];
+		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+		text.append(std::string(fullFilePath).substr(0, pos));
+		text.append("\" in ");
+		text.append(fileName);
+		outputText->push(text);
+
+		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+
+		//Open the file in an editor
+		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+
+		return success;
 	}//End Exporting functionality
 }//End Export (Template)
 
 //Export call for adding a template to a group
-int Template::Export(PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
 {
 	return 1;
 }//End Export

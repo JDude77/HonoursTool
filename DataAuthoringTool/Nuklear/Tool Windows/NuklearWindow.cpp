@@ -12,45 +12,50 @@ NuklearWindow::NuklearWindow(const WINDOW_TYPE windowType, const shared_ptr<Data
 {
 	switch (windowType_)
 	{
-	case NONE: 
+	case WINDOW_TYPE::NONE: 
 		hasHeader_ = false;
 		hasFooter_ = false;
+		hasSubFooter_ = false;
 		windowTitle_ = "WINDOW IS NONETYPE";
 		break;
 
-	case LANDING:
+	case WINDOW_TYPE::LANDING:
 		hasHeader_ = false;
 		hasFooter_ = false;
+		hasSubFooter_ = false;
 		windowTitle_ = windowTitle == nullptr ? "Data Authoring Tool - Press Button To Open Window" : windowTitle;
 		break;
 
-	case MEMBER_WINDOW:
+	case WINDOW_TYPE::MEMBER_WINDOW:
 		hasHeader_ = true;
 		hasFooter_ = true;
+		hasSubFooter_ = true;
 		windowTitle_ = windowTitle == nullptr ? "Member Creator" : windowTitle;
 		{
-			auto data = dynamic_pointer_cast<Member>(windowData);
+			const auto data = dynamic_pointer_cast<Member>(windowData);
 			dataManager->AddInstanceToDataMap(Member(*data));
 		}//End pointer cast
 		break;
 
-	case TEMPLATE_WINDOW:
+	case WINDOW_TYPE::TEMPLATE_WINDOW:
 		hasHeader_ = true;
 		hasFooter_ = true;
+		hasSubFooter_ = true;
 		windowTitle_ = windowTitle == nullptr ? "Template Creator" : windowTitle;
 		{
-			auto data = dynamic_pointer_cast<Template>(windowData);
+			const auto data = dynamic_pointer_cast<Template>(windowData);
 
 			dataManager->AddInstanceToDataMap(Template(*data));
 		}//End pointer cast
 		break;
 	
-	case GROUP_WINDOW: 
+	case WINDOW_TYPE::GROUP_WINDOW: 
 		hasHeader_ = true;
 		hasFooter_ = true;
+		hasSubFooter_ = true;
 		windowTitle_ = windowTitle == nullptr ? "Group Creator" : windowTitle;
 		{
-			auto data = dynamic_pointer_cast<Group>(windowData);
+			const auto data = dynamic_pointer_cast<Group>(windowData);
 			dataManager->AddInstanceToDataMap(Group(*data));
 		}//End pointer cast
 		break;
