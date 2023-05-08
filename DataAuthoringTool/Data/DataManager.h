@@ -38,6 +38,8 @@ public:
 	vector<shared_ptr<Member>> GetAllMembers();
 	vector<shared_ptr<Template>> GetAllTemplates();
 	vector<shared_ptr<Group>> GetAllGroups();
+
+	shared_ptr<Template> FindTemplateByInternalID(int internalID);
 	
 	void AddInstanceToDataMap(Member instance);
 	void AddInstanceToDataMap(Template instance);

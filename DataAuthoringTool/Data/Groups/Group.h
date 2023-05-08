@@ -41,6 +41,10 @@ public:
 	int RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove);
 	int RemoveMemberFromGroup(const shared_ptr<Member>& memberToRemove);
 
+	void FlagTemplateToAdd(int templateID);
+	bool GetAddNewTemplateFlag() const { return addNewTemplateFlag_; }
+	int GetFlaggedTemplateInternalID() const { return cachedIDOfTemplateToAdd_; }
+
 private:
 	//String: Member ID, Shared Pointer: Member pointer to be re-retrieved using the ID if memory location changes
 	vector<pair<string, shared_ptr<Member>>> members_;
@@ -48,5 +52,7 @@ private:
 	vector<pair<string, shared_ptr<Template>>> templates_;
 	//Which tab was last active
 	int activeTemplateTab_ = -1;
+	bool addNewTemplateFlag_ = false;
+	int cachedIDOfTemplateToAdd_ = -1;
 };
 #endif

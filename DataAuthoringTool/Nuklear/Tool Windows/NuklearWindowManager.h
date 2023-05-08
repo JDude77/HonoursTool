@@ -189,7 +189,7 @@ private:
 			}//End for
 		}//End if
 	}//End ClearDeletedCharacters
-	bool DeleteEmptyDataEntriesFromDataManager(nk_context* nuklearContext, NuklearWindow* nuklearWindow, const shared_ptr<PrimaryData> windowData, string id, bool& value)
+	bool DeleteEmptyDataEntriesFromDataManager(nk_context* nuklearContext, NuklearWindow* nuklearWindow, const shared_ptr<PrimaryData>& windowData, const string& id, bool& value)
 	{
 		//After data processing, check if the window is closed
 		if (nk_window_is_closed(nuklearContext, id.c_str()) || nk_window_is_hidden(nuklearContext, id.c_str()))
@@ -272,40 +272,45 @@ private:
 		//Get the number of tabs that should be active
 		const int numberOfTabs = groupData->GetNumberOfTemplates();
 
-		//Get list of names for templates
-		vector<const char*> templateNames;
-		for (const auto& temp : *cachedTemplates_)
+		//Get list of internal IDs and names for templates
+		map<const int, const char*> templates;
+		const vector<shared_ptr<Template>> groupDataExistingTemplates = groupData->GetTemplates();
+		for (const shared_ptr<Template>& temp : *cachedTemplates_)
 		{
-			if (temp->GetInternalID() == -1 || temp->IsEmpty())
-				continue;
+			//Don't gather names of empty templates or the dedicated None template
+			if (temp->GetInternalID() == -1 || temp->IsEmpty()) continue;
 
-			auto cache = groupData->GetTemplates();
-			if (std::ranges::find(cache, temp) != cache.end())
-				continue;
+			//Also don't show any templates already in the group
+			if (std::ranges::find(groupDataExistingTemplates, temp) != groupDataExistingTemplates.end()) continue;
 
-			templateNames.push_back(temp->GetIDBuffer());
+			templates.emplace(temp->GetInternalID(), temp->GetNameBuffer());
 		}//End for
 
-		//Only show the ability to add templates if there are templates to add
 		//Set up the tab styling
 		nk_style_push_vec2(nuklearContext, &nuklearContext->style.window.spacing, nk_vec2(0, 0));
 		nk_style_push_float(nuklearContext, &nuklearContext->style.button.rounding, 0);
 		nk_layout_row_dynamic(nuklearContext, 24, numberOfTabs + 1);
 
-		//Tab with template listing added members
+		//Tab with template which has added members of that type below it
 		for (int i = 0; i < groupData->GetNumberOfTemplates(); i++)
 		{
-			if (const auto templateLabel = groupData->GetTemplates().at(i)->GetIDBuffer(); nk_selectable_tab(nuklearContext, templateLabel, activeTab == i)) { activeTab = i; }
+			//Clickable tabs to choose which template is being worked with
+			if (const char* templateLabel = groupData->GetTemplates().at(i)->GetIDBuffer(); nk_selectable_tab(nuklearContext, templateLabel, activeTab == i))
+			{
+				activeTab = i;
+				groupData->SetActiveTemplateTab(i);
+			}//End if
 		}//End for
 
-		if (!templateNames.empty())
+		//Only show the ability to add templates if there are templates to add
+		if (!templates.empty())
 		{
 			nuklearContext->style.combo = addComboStyle_;
 			//Dropdown/button combo which selects and adds template at the same time
-			if (nk_combo_begin_label(nuklearContext, "Add Template To Group", nk_vec2(300, 300)))
+			if (nk_combo_begin_label(nuklearContext, "Add Template To Group", nk_vec2(600, 400)))
 			{
+				//Create a vector of template names already in the group
 				vector<const char*> groupTemplateNames;
-
 				for (const auto& temp : groupData->GetTemplates())
 				{
 					groupTemplateNames.push_back(temp->GetIDBuffer());
@@ -314,19 +319,23 @@ private:
 				nk_layout_row_dynamic(nuklearContext, 24, 1);
 
 				//Render every button of templates to add
-				for (int i = 0; i < templateNames.size(); i++)
+				int templateNumber = 0;
+				for(auto iterator = templates.begin(); iterator != templates.end(); ++iterator)
 				{
-					//If the template is not already within the group
-					if (auto& name = templateNames.at(i); std::ranges::find(groupTemplateNames, name) == groupTemplateNames.end())
+					//Show a button to allow for adding it to the group
+					if (nk_button_label(nuklearContext, iterator->second))
 					{
-						if (nk_button_label(nuklearContext, templateNames.at(i))) { groupData->SetActiveTemplateTab(i); break; }
+						//groupData->SetActiveTemplateTab(templateNumber);
+						groupData->FlagTemplateToAdd(iterator->first);
+						break;
 					}//End if
+					templateNumber++;
 				}//End for
 
-				if (static int* activeTemplateTab = groupData->GetActiveTemplateTab(); *activeTemplateTab != -1)
+				if (groupData->GetAddNewTemplateFlag())
 				{
-					groupData->AddTemplateToGroup(dataManager_->GetAllTemplates().at(*activeTemplateTab + 1));
-					groupData->SetActiveTemplateTab(-1);
+					groupData->AddTemplateToGroup(dataManager_->FindTemplateByInternalID(groupData->GetFlaggedTemplateInternalID()));
+					groupData->SetActiveTemplateTab(groupData->GetNumberOfTemplates() - 1);
 					nk_combo_close(nuklearContext);
 					nk_style_pop_float(nuklearContext);
 					nk_style_pop_vec2(nuklearContext);
@@ -435,7 +444,7 @@ private:
 
 		nk_layout_space_end(nuklearContext);
 	}//End RenderLandingBody
-	void RenderMemberBody(nk_context* nuklearContext, const shared_ptr<Member>& memberData, NuklearWindow* nuklearWindow)
+	void RenderMemberBody(nk_context* nuklearContext, const shared_ptr<Member>& memberData, const NuklearWindow* nuklearWindow)
 	{
 		for (int i = 0; i < memberData->GetNumberOfFields(); i++)
 		{
@@ -500,9 +509,9 @@ private:
 		}//End for
 		dataManager_->UpdateInstance(memberData);
 	}
-	bool RenderGroupBody(nk_context* nuklearContext, const shared_ptr<Group>& groupData, NuklearWindow* nuklearWindow, bool& value)
+	bool RenderGroupBody(nk_context* nuklearContext, const shared_ptr<Group>& groupData, const NuklearWindow* nuklearWindow, bool& value)
 	{
-		static int activeTab = 0;
+		int activeTab = *groupData->GetActiveTemplateTab();
 
 		//Render the tabs to let you select which template is currently active
 		//Needs a formatting update but good enough for now
@@ -865,7 +874,7 @@ private:
 	}//End RenderTemplateBody
 
 	//Window Render Sections
-	bool RenderWindowHeader(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* nuklearWindow)
+	bool RenderWindowHeader(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, const NuklearWindow* nuklearWindow)
 	{
 		nk_layout_row_dynamic(nuklearContext, 24, 4);
 		//Name
@@ -907,7 +916,7 @@ private:
 
 		return true;
 	}//End RenderWindowHeader
-	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* currentWindow)
+	bool RenderWindowBody(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, const NuklearWindow* currentWindow)
 	{
 		//LANDING
 		if (windowData == nullptr)
@@ -943,7 +952,7 @@ private:
 
 		return true;
 	}//End RenderWindowBody
-	bool RenderWindowFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, NuklearWindow* nuklearWindow)
+	bool RenderWindowFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData, const NuklearWindow* nuklearWindow)
 	{
 		//Customise label to show what exact type is being exported to lower confusion
 		string exportLabel;
@@ -968,7 +977,7 @@ private:
 
 		return true;
 	}//End RenderWindowFooter
-	bool RenderWindowSubFooter(nk_context* nuklearContext, const shared_ptr<PrimaryData>& windowData,  std::queue<string>* subfooterText)
+	bool RenderWindowSubFooter(nk_context* nuklearContext, std::queue<string>* subfooterText) const
 	{
 		//Subfooter text is currently always going to be the validation or export result
 		if(!subfooterText->empty())
@@ -1031,7 +1040,7 @@ private:
 				//Render Sub-Footer
 				if (nuklearWindow->GetHasSubFooter())
 				{
-					if (!RenderWindowSubFooter(nuklearContext, windowData, nuklearWindow->GetSubFooterText())) return false;
+					if (!RenderWindowSubFooter(nuklearContext, nuklearWindow->GetSubFooterText())) return false;
 				}//End if
 			}//End nk_begin
 

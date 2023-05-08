@@ -51,6 +51,15 @@ vector<shared_ptr<Group>> DataManager::GetAllGroups()
 	return groups;
 }//End GetAllGroups
 
+shared_ptr<Template> DataManager::FindTemplateByInternalID(const int internalID)
+{
+	for(const auto& temp : templates_ | std::views::values)
+	{
+		if(temp->GetInternalID() == internalID) return temp;
+	}//End for
+	return nullptr;
+}//End FindTemplateByInternalID
+
 void DataManager::AddInstanceToDataMap(Member instance)
 {
 	string id;

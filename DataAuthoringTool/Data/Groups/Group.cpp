@@ -156,10 +156,15 @@ int Group::AddTemplateToGroup(const shared_ptr<Template>& newTemplate)
 		}//End if
 	}//End for
 
+	//Reset flags and cached internal IDs
+	addNewTemplateFlag_ = false;
+	cachedIDOfTemplateToAdd_ = -1;
+
 	//Add the template to the group
 	templates_.emplace_back(id, newTemplate);
 	return 1;
 }//End AddTemplateToGroup
+
 
 int Group::AddMemberToGroup(const shared_ptr<Member>& newMember)
 {
@@ -232,3 +237,9 @@ int Group::RemoveMemberFromGroup(const shared_ptr<Member>& memberToRemove)
 
 	return 1;
 }//End RemoveMemberFromGroup
+
+void Group::FlagTemplateToAdd(const int templateID)
+{
+	cachedIDOfTemplateToAdd_ = templateID;
+	addNewTemplateFlag_ = true;
+}//End FlagTemplateToAdd
