@@ -11,7 +11,7 @@ DataManager::DataManager()
 vector<shared_ptr<Member>> DataManager::GetAllMembers()
 {
 	vector<shared_ptr<Member>> members;
-	for (const auto& member : members_ | std::views::values)
+	for (const shared_ptr<Member>& member : members_ | std::views::values)
 	{
 		members.push_back(member);
 	}//End for
@@ -22,7 +22,7 @@ vector<shared_ptr<Member>> DataManager::GetAllMembers()
 vector<shared_ptr<Template>> DataManager::GetAllTemplates()
 {
 	vector<shared_ptr<Template>> templates;
-	for (const auto& temp : templates_ | std::views::values)
+	for (const shared_ptr<Template>& temp : templates_ | std::views::values)
 	{
 		templates.push_back(temp);
 	}//End for
@@ -43,7 +43,7 @@ vector<shared_ptr<Template>> DataManager::GetAllTemplates()
 vector<shared_ptr<Group>> DataManager::GetAllGroups()
 {
 	vector<shared_ptr<Group>> groups;
-	for (const auto& group : groups_ | std::views::values)
+	for (const shared_ptr<Group>& group : groups_ | std::views::values)
 	{
 		groups.push_back(group);
 	}//End for
@@ -53,33 +53,48 @@ vector<shared_ptr<Group>> DataManager::GetAllGroups()
 
 shared_ptr<Template> DataManager::FindTemplateByInternalID(const int internalID)
 {
-	for(const auto& temp : templates_ | std::views::values)
+	for(const shared_ptr<Template>& temp : templates_ | std::views::values)
 	{
 		if(temp->GetInternalID() == internalID) return temp;
 	}//End for
 	return nullptr;
 }//End FindTemplateByInternalID
 
+shared_ptr<Member> DataManager::FindMemberByInternalID(const int internalID)
+{
+	for(const shared_ptr<Member>& member : members_ | std::views::values)
+	{
+		if(member->GetInternalID() == internalID) return member;
+	}//End for
+	return nullptr;
+}//End FindMemberByInternalID
+
+shared_ptr<Group> DataManager::FindGroupByInternalID(const int internalID)
+{
+	for(const shared_ptr<Group>& group : groups_ | std::views::values)
+	{
+		if(group->GetInternalID() == internalID) return group;
+	}//End for
+	return nullptr;
+}//End FindGroupByInternalID
+
 void DataManager::AddInstanceToDataMap(Member instance)
 {
-	string id;
-	id.append(instance.GetIDBuffer());
+	string id = instance.GetIDBuffer();
 	members_.insert({id, std::make_shared<Member>(instance)});
 	++numberOfMembers_;
 }//End AddInstanceToDataMap (Member)
 
 void DataManager::AddInstanceToDataMap(Template instance)
 {
-	string id;
-	id.append(instance.GetIDBuffer());
+	string id = instance.GetIDBuffer();
 	templates_.insert({id, std::make_shared<Template>(instance)});
 	++numberOfTemplates_;
 }//End AddInstanceToDataMap (Template)
 
 void DataManager::AddInstanceToDataMap(Group instance)
 {
-	string id;
-	id.append(instance.GetIDBuffer());
+	string id = instance.GetIDBuffer();
 	groups_.insert({id, std::make_shared<Group>(instance)});
 	++numberOfGroups_;
 }//End AddInstanceToDataMap (Group)
@@ -90,6 +105,7 @@ void DataManager::RemoveInstanceFromDataMap(Member instance)
 	if(iterator == members_.end()) return;
 
 	members_.erase(iterator);
+	--numberOfMembers_;
 }//End RemoveInstanceFromDataMap (Member)
 
 void DataManager::RemoveInstanceFromDataMap(Template instance)
@@ -98,6 +114,7 @@ void DataManager::RemoveInstanceFromDataMap(Template instance)
 	if(iterator == templates_.end()) return;
 
 	templates_.erase(iterator);
+	--numberOfTemplates_;
 }//End RemoveInstanceFromDataMap (Template)
 
 void DataManager::RemoveInstanceFromDataMap(Group instance)
@@ -106,6 +123,7 @@ void DataManager::RemoveInstanceFromDataMap(Group instance)
 	if(iterator == groups_.end()) return;
 
 	groups_.erase(iterator);
+	--numberOfGroups_;
 }//End RemoveInstanceFromDataMap (Group)
 
 void DataManager::UpdateInstance(const shared_ptr<Member>& instance)
@@ -179,12 +197,12 @@ int DataManager::GetInternalID(const bool incrementAfter)
 
 void DataManager::DeleteInstanceAndCleanUpConnections(const shared_ptr<PrimaryData>& instance)
 {
-	if(const auto member = std::dynamic_pointer_cast<Member>(instance))
+	if(const shared_ptr<Member> member = std::dynamic_pointer_cast<Member>(instance))
 	{
 		//Remove member from any groups it's in
 		for (auto it = groups_.begin(); it != groups_.end(); ++it)
 		{
-			const auto cachedGroup = it->second;
+			const shared_ptr<Group> cachedGroup = it->second;
 			cachedGroup->RemoveMemberFromGroup(member);
 		}//End for
 
@@ -193,7 +211,7 @@ void DataManager::DeleteInstanceAndCleanUpConnections(const shared_ptr<PrimaryDa
 		member->SetTemplateIndex(0);
 	}//End if
 
-	else if(const auto temp = std::dynamic_pointer_cast<Template>(instance))
+	else if(const shared_ptr<Template> temp = std::dynamic_pointer_cast<Template>(instance))
 	{
 		//Check all groups for this template type
 		for(auto it = groups_.begin(); it != groups_.end(); ++it)
@@ -205,8 +223,7 @@ void DataManager::DeleteInstanceAndCleanUpConnections(const shared_ptr<PrimaryDa
 		//Set type of template back to none for all members of this type
 		for(auto it = members_.begin(); it != members_.end(); ++it)
 		{
-			const auto cachedMember = it->second;
-			if(cachedMember->GetType()->GetInternalID() == temp->GetInternalID())
+			if(const shared_ptr<Member> cachedMember = it->second; cachedMember->GetType()->GetInternalID() == temp->GetInternalID())
 			{
 				cachedMember->SetType(templates_["None"]);
 				cachedMember->SetTemplateIndex(0);

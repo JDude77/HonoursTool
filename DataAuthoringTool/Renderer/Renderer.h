@@ -4,16 +4,18 @@
 
 #define COBJMACROS
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+
 #include <d3d11.h>
 #include <memory>
 #include <string>
+#include <windows.h>
 
 //Forward Declarations
 struct nk_colorf;
 struct nk_context;
-class NuklearWindowManager;
+
 class DataManager;
+class NuklearWindowManager;
 
 class Renderer
 {
@@ -34,9 +36,6 @@ private:
 
 	inline static std::unique_ptr<long> windowWidth_ = std::make_unique<long>();
 	inline static std::unique_ptr<long> windowHeight_ = std::make_unique<long>();
-
-public:
-
 #pragma endregion
 
 #pragma region Behaviours

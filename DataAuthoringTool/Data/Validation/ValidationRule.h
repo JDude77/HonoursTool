@@ -1,21 +1,19 @@
 #pragma once
 #ifndef VALIDATION_RULE
 #define VALIDATION_RULE
-
-#include <algorithm>
-
 #include "../Shared/DataTypes.h"
 
 #include <vector>
-using std::vector;
 #include <map>
-using std::map;
 #include <functional>
-using std::function;
 #include <any>
 
+using std::vector;
+using std::map;
+using std::function;
+
 //Enum representing each individual possible rule
-enum RULES
+enum class RULES
 {
 	NA,
 	ALL_PRESENCE,
@@ -36,17 +34,8 @@ enum RULES
 //It feels cursed. Very cursed.
 struct ValidationFunction
 {
-	template<typename F>
-	ValidationFunction(F&& fun) : ValidationFunction(function(std::forward<F>(fun))) {}
-
 	template<typename ... Args>
 	ValidationFunction(function<bool(Args...)> fun) : any_(fun) {}
-
-	template<typename ... Args>
-	bool operator()(Args&& ... args)
-	{
-		return std::invoke(std::any_cast<function<bool(Args...)>>(any_), std::forward<Args>(args)...);
-	}//End () operator
 
 	static bool Presence(const char* dataBuffer)
 	{
@@ -68,8 +57,8 @@ struct ValidationFunction
 		if(strlen(dataBuffer) == 0) return false;
 		const string data(dataBuffer);
 		const string sub(subString);
-		const auto temp = data.substr(0, sub.size());
-		const auto result = sub.compare(temp);
+		const string temp = data.substr(0, sub.size());
+		const int result = sub.compare(temp);
 		return result == 0 ? true : false;
 	}//End StringStartsWithSubstring
 
@@ -78,8 +67,8 @@ struct ValidationFunction
 		if(strlen(dataBuffer) == 0) return false;
 		const string data(dataBuffer);
 		const string sub(subString);
-		const auto temp = data.substr(data.size() - sub.size(), sub.size());
-		const auto result = sub.compare(temp);
+		const string temp = data.substr(data.size() - sub.size(), sub.size());
+		const int result = sub.compare(temp);
 		return result == 0 ? true : false;
 	}//End StringEndsWithSubstring
 
@@ -95,25 +84,25 @@ struct ValidationFunction
 
 	static bool NumberIsNotZero(const char* dataBuffer)
 	{
-		const auto number = strtol(dataBuffer, nullptr, 0);
+		const long number = strtol(dataBuffer, nullptr, 0);
 		return number != 0;
 	}//End NumberIsNotZero
 
 	static bool NumberIsGreaterThan(const char* dataBuffer, const char* greaterThan)
 	{
-		const auto number = strtof(dataBuffer, nullptr);
+		const float number = strtof(dataBuffer, nullptr);
 		return number > strtof(greaterThan, nullptr);
 	}//End NumberIsGreaterThan
 
 	static bool NumberIsLessThan(const char* dataBuffer, const char* lessThan)
 	{
-		const auto number = strtof(dataBuffer, nullptr);
+		const float number = strtof(dataBuffer, nullptr);
 		return number < strtof(lessThan, nullptr);
 	}//End NumberIsLessThan
 
 	static bool IntegerDivisibleByInteger(const char* dataBuffer, const char* divisor)
 	{
-		const auto number = strtol(dataBuffer, nullptr, 0);
+		const long number = strtol(dataBuffer, nullptr, 0);
 		if(number == 0) return false;
 		return number % strtol(divisor, nullptr, 0) == 0;
 	}//End IntegerDivisibleByInteger
@@ -138,13 +127,13 @@ class ValidationRule
 		//None (empty)
 		{
 			DataType::DATA_TYPE::NONE,
-			vector{ NA }//End None Rules
+			vector{RULES::NA }//End None Rules
 		},//End None Entry
 
 		//Boolean (empty)
 		{
 			DataType::DATA_TYPE::BOOLEAN,
-			vector{ NA }//End Boolean Rules
+			vector{RULES::NA }//End Boolean Rules
 		},//End Boolean Entry
 
 		//String
@@ -152,11 +141,11 @@ class ValidationRule
 			DataType::DATA_TYPE::STRING,
 			vector
 			{
-				ALL_PRESENCE,
-				STRING_MAX_LENGTH,
-				STRING_MIN_LENGTH,
-				STRING_STARTS_WITH_SUBSTRING,
-				STRING_ENDS_WITH_SUBSTRING
+				RULES::ALL_PRESENCE,
+				RULES::STRING_MAX_LENGTH,
+				RULES::STRING_MIN_LENGTH,
+				RULES::STRING_STARTS_WITH_SUBSTRING,
+				RULES::STRING_ENDS_WITH_SUBSTRING
 			}//End String Rules
 		},//End String Entry
 
@@ -165,13 +154,13 @@ class ValidationRule
 			DataType::DATA_TYPE::INTEGER,
 			vector
 			{
-				ALL_PRESENCE,
-				NUMBER_IS_NOT_NEGATIVE,
-				NUMBER_IS_NEGATIVE,
-				NUMBER_IS_NOT_ZERO,
-				NUMBER_IS_LESS_THAN,
-				NUMBER_IS_GREATER_THAN,
-				INTEGER_DIVISIBLE_BY_INTEGER
+				RULES::ALL_PRESENCE,
+				RULES::NUMBER_IS_NOT_NEGATIVE,
+				RULES::NUMBER_IS_NEGATIVE,
+				RULES::NUMBER_IS_NOT_ZERO,
+				RULES::NUMBER_IS_LESS_THAN,
+				RULES::NUMBER_IS_GREATER_THAN,
+				RULES::INTEGER_DIVISIBLE_BY_INTEGER
 			}//End Integer Rules
 		},//End Integer Entry
 
@@ -180,12 +169,12 @@ class ValidationRule
 			DataType::DATA_TYPE::FLOAT,
 			vector
 			{
-				ALL_PRESENCE,
-				NUMBER_IS_NOT_NEGATIVE,
-				NUMBER_IS_NEGATIVE,
-				NUMBER_IS_NOT_ZERO,
-				NUMBER_IS_LESS_THAN,
-				NUMBER_IS_GREATER_THAN
+				RULES::ALL_PRESENCE,
+				RULES::NUMBER_IS_NOT_NEGATIVE,
+				RULES::NUMBER_IS_NEGATIVE,
+				RULES::NUMBER_IS_NOT_ZERO,
+				RULES::NUMBER_IS_LESS_THAN,
+				RULES::NUMBER_IS_GREATER_THAN
 			}//End Float Rules
 		},//End Float Entry
 
@@ -194,78 +183,78 @@ class ValidationRule
 			DataType::DATA_TYPE::CHAR,
 			vector
 			{
-				ALL_PRESENCE,
-				CHAR_IS_ONE_OF_CHARACTER_SET
+				RULES::ALL_PRESENCE,
+				RULES::CHAR_IS_ONE_OF_CHARACTER_SET
 			}//End Char Rules
 		},//End Char Entry
 	};//End Map Initialization
 public:
 	inline static const map<const RULES, ValidationFunction> validationRuleFunctions_
 	{
-		{ALL_PRESENCE,					ValidationFunction(function(&ValidationFunction::Presence))},
-		{STRING_MAX_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMaxLength))},
-		{STRING_STARTS_WITH_SUBSTRING,	ValidationFunction(function(&ValidationFunction::StringStartsWithSubstring))},
-		{STRING_MIN_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMinLength))},
-		{STRING_ENDS_WITH_SUBSTRING,		ValidationFunction(function(&ValidationFunction::StringEndsWithSubstring))},
-		{NUMBER_IS_NOT_NEGATIVE,			ValidationFunction(function(&ValidationFunction::NumberIsNotNegative))},
-		{NUMBER_IS_NEGATIVE,				ValidationFunction(function(&ValidationFunction::NumberIsNegative))},
-		{NUMBER_IS_NOT_ZERO,				ValidationFunction(function(&ValidationFunction::NumberIsNotZero))},
-		{NUMBER_IS_GREATER_THAN,			ValidationFunction(function(&ValidationFunction::NumberIsGreaterThan))},
-		{NUMBER_IS_LESS_THAN,				ValidationFunction(function(&ValidationFunction::NumberIsLessThan))},
-		{INTEGER_DIVISIBLE_BY_INTEGER,	ValidationFunction(function(&ValidationFunction::IntegerDivisibleByInteger))},
-		{CHAR_IS_ONE_OF_CHARACTER_SET,	ValidationFunction(function(&ValidationFunction::CharIsOneOfCharacterSet))},
+		{RULES::ALL_PRESENCE,						ValidationFunction(function(&ValidationFunction::Presence))},
+		{RULES::STRING_MAX_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMaxLength))},
+		{RULES::STRING_STARTS_WITH_SUBSTRING,		ValidationFunction(function(&ValidationFunction::StringStartsWithSubstring))},
+		{RULES::STRING_MIN_LENGTH,				ValidationFunction(function(&ValidationFunction::StringMinLength))},
+		{RULES::STRING_ENDS_WITH_SUBSTRING,		ValidationFunction(function(&ValidationFunction::StringEndsWithSubstring))},
+		{RULES::NUMBER_IS_NOT_NEGATIVE,			ValidationFunction(function(&ValidationFunction::NumberIsNotNegative))},
+		{RULES::NUMBER_IS_NEGATIVE,				ValidationFunction(function(&ValidationFunction::NumberIsNegative))},
+		{RULES::NUMBER_IS_NOT_ZERO,				ValidationFunction(function(&ValidationFunction::NumberIsNotZero))},
+		{RULES::NUMBER_IS_GREATER_THAN,			ValidationFunction(function(&ValidationFunction::NumberIsGreaterThan))},
+		{RULES::NUMBER_IS_LESS_THAN,				ValidationFunction(function(&ValidationFunction::NumberIsLessThan))},
+		{RULES::INTEGER_DIVISIBLE_BY_INTEGER,		ValidationFunction(function(&ValidationFunction::IntegerDivisibleByInteger))},
+		{RULES::CHAR_IS_ONE_OF_CHARACTER_SET,		ValidationFunction(function(&ValidationFunction::CharIsOneOfCharacterSet))},
 	};
 private:
 	inline static const map<const RULES, const string> validationRuleLabels_
 	{
-		{ALL_PRESENCE,					"Must not be left blank/empty"},
-		{STRING_MAX_LENGTH,				"Text must not be longer than maximum length"},
-		{STRING_MIN_LENGTH,				"Text must not be shorter than minimum length"},
-		{STRING_STARTS_WITH_SUBSTRING,	"Text must start with specific text"},
-		{STRING_ENDS_WITH_SUBSTRING,		"Text must end with specific text"},
-		{NUMBER_IS_NOT_NEGATIVE,			"Number must not be negative"},
-		{NUMBER_IS_NOT_ZERO,				"Number must not be zero"},
-		{NUMBER_IS_NEGATIVE,				"Number must be negative"},
-		{NUMBER_IS_GREATER_THAN,			"Number must be greater than specific number"},
-		{NUMBER_IS_LESS_THAN,				"Number must be less than specific number"},
-		{INTEGER_DIVISIBLE_BY_INTEGER,	"Whole number must be divisible by other whole number"},
-		{CHAR_IS_ONE_OF_CHARACTER_SET,	"Character must be one of a set of characters"},
+		{RULES::ALL_PRESENCE,						"Must not be left blank/empty"},
+		{RULES::STRING_MAX_LENGTH,				"Text must not be longer than maximum length"},
+		{RULES::STRING_MIN_LENGTH,				"Text must not be shorter than minimum length"},
+		{RULES::STRING_STARTS_WITH_SUBSTRING,		"Text must start with specific text"},
+		{RULES::STRING_ENDS_WITH_SUBSTRING,		"Text must end with specific text"},
+		{RULES::NUMBER_IS_NOT_NEGATIVE,			"Number must not be negative"},
+		{RULES::NUMBER_IS_NOT_ZERO,				"Number must not be zero"},
+		{RULES::NUMBER_IS_NEGATIVE,				"Number must be negative"},
+		{RULES::NUMBER_IS_GREATER_THAN,			"Number must be greater than specific number"},
+		{RULES::NUMBER_IS_LESS_THAN,				"Number must be less than specific number"},
+		{RULES::INTEGER_DIVISIBLE_BY_INTEGER,		"Whole number must be divisible by other whole number"},
+		{RULES::CHAR_IS_ONE_OF_CHARACTER_SET,		"Character must be one of a set of characters"},
 	};
 
 	inline static const vector<string> stringRuleLabels_
 	{
-		validationRuleLabels_.at(ALL_PRESENCE),
-		validationRuleLabels_.at(STRING_MAX_LENGTH),
-		validationRuleLabels_.at(STRING_MIN_LENGTH),
-		validationRuleLabels_.at(STRING_STARTS_WITH_SUBSTRING),
-		validationRuleLabels_.at(STRING_ENDS_WITH_SUBSTRING)
+		validationRuleLabels_.at(RULES::ALL_PRESENCE),
+		validationRuleLabels_.at(RULES::STRING_MAX_LENGTH),
+		validationRuleLabels_.at(RULES::STRING_MIN_LENGTH),
+		validationRuleLabels_.at(RULES::STRING_STARTS_WITH_SUBSTRING),
+		validationRuleLabels_.at(RULES::STRING_ENDS_WITH_SUBSTRING)
 	};
 
 	inline static const vector<string> integerRuleLabels_
 	{
-		validationRuleLabels_.at(ALL_PRESENCE),
-		validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
-		validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
-		validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
-		validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
-		validationRuleLabels_.at(NUMBER_IS_GREATER_THAN),
-		validationRuleLabels_.at(INTEGER_DIVISIBLE_BY_INTEGER)
+		validationRuleLabels_.at(RULES::ALL_PRESENCE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NOT_NEGATIVE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NEGATIVE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NOT_ZERO),
+		validationRuleLabels_.at(RULES::NUMBER_IS_LESS_THAN),
+		validationRuleLabels_.at(RULES::NUMBER_IS_GREATER_THAN),
+		validationRuleLabels_.at(RULES::INTEGER_DIVISIBLE_BY_INTEGER)
 	};
 
 	inline static const vector<string> floatRuleLabels_
 	{
-		validationRuleLabels_.at(ALL_PRESENCE),
-		validationRuleLabels_.at(NUMBER_IS_NOT_NEGATIVE),
-		validationRuleLabels_.at(NUMBER_IS_NEGATIVE),
-		validationRuleLabels_.at(NUMBER_IS_NOT_ZERO),
-		validationRuleLabels_.at(NUMBER_IS_LESS_THAN),
-		validationRuleLabels_.at(NUMBER_IS_GREATER_THAN)
+		validationRuleLabels_.at(RULES::ALL_PRESENCE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NOT_NEGATIVE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NEGATIVE),
+		validationRuleLabels_.at(RULES::NUMBER_IS_NOT_ZERO),
+		validationRuleLabels_.at(RULES::NUMBER_IS_LESS_THAN),
+		validationRuleLabels_.at(RULES::NUMBER_IS_GREATER_THAN)
 	};
 
 	inline static const vector<string> charRuleLabels_
 	{
-		validationRuleLabels_.at(ALL_PRESENCE),
-		validationRuleLabels_.at(CHAR_IS_ONE_OF_CHARACTER_SET)
+		validationRuleLabels_.at(RULES::ALL_PRESENCE),
+		validationRuleLabels_.at(RULES::CHAR_IS_ONE_OF_CHARACTER_SET)
 	};
 
 public:
@@ -282,7 +271,7 @@ public:
 			case DataType::DATA_TYPE::STRING:	return stringRuleLabels_;
 			case DataType::DATA_TYPE::INTEGER:	return integerRuleLabels_;
 			case DataType::DATA_TYPE::FLOAT:	return floatRuleLabels_;
-			case DataType::DATA_TYPE::CHAR:	return charRuleLabels_;
+			case DataType::DATA_TYPE::CHAR:		return charRuleLabels_;
 		}//End switch
 		return {};
 	} //End GetValidationRuleLabels

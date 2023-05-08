@@ -1,11 +1,18 @@
 #include "Member.h"
 
-#include "Windows.h"
-
 #include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
-using namespace rapidjson;
+#include <Windows.h>
+
+using rapidjson::Document;
+using rapidjson::FileWriteStream;
+using rapidjson::GenericValue;
+using rapidjson::kArrayType;
+using rapidjson::kObjectType;
+using rapidjson::PrettyWriter;
+using rapidjson::UTF8;
+using rapidjson::Value;
 
 int Member::Save()
 {
@@ -21,7 +28,6 @@ int Member::Load()
 
 int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 {
-	//TODO: Member export functionality
 	//Create JSON Document
 	Document jsonDocument;
 	jsonDocument.SetObject();
@@ -80,14 +86,15 @@ int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 					jsonDocument.AddMember(name, booleanVal, allocator);
 				}//End Boolean data handling
 				break;
-			default: break;
+
+			case DataType::DATA_TYPE::NONE: default: break;
 		}//End switch
 	}//End for
 	{
 		//Construct file name
 		string fileName;
 		fileName.append(idBuffer_);
-		fileName.append(".json");
+		fileName.append("_MEMBER.json");
 
 		//Set up buffer/stream/file
 		FILE* filePath = fopen(fileName.c_str(), "wb");
@@ -104,31 +111,47 @@ int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 		//Output text
 		string text = "Member ";
 		text.append(idBuffer_);
-		text.append(" exported successfully!");
-		outputText->push(text);
 
-		//Get file path exported to
-		text = "File located at: \"";
-		char fullFilePath[MAX_PATH];
-		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
-		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
-		text.append(std::string(fullFilePath).substr(0, pos));
-		text.append("\" in ");
-		text.append(fileName);
-		outputText->push(text);
+		if(success == 0)
+		{
+			text.append(" exported successfully!");
+			outputText->push(text);
 
-		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
-		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+			//Get file path exported to
+			text = "File located at: \"";
+			char fullFilePath[MAX_PATH];
+			GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+			const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+			text.append(std::string(fullFilePath).substr(0, pos));
+			text.append("\" in ");
+			text.append(fileName);
+			outputText->push(text);
 
-		//Open the file in an editor
-		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+			const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+			const LPCWSTR fileAsCString = fileNameToWString.c_str();
+
+			//Open the file in an editor
+			ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+		}//End if
+		else
+		{
+			text.append(" did not export successfully.");
+			outputText->push(text);
+
+			text = "File close function returned with value: ";
+			text.append(std::to_string(success));
+			outputText->push(text);
+
+			text = "Please send a report about this error to the developer.";
+			outputText->push(text);
+		}//End else
 
 		return success;
 	}//End Exporting functionality
 }//End Export
 
 //Export call for adding a member to a group JSON file
-int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<Document> jsonDocument)
 {
 	//Get reference to the allocator for adding new objects
 	Document::AllocatorType& allocator = jsonDocument->GetAllocator();
@@ -153,7 +176,8 @@ int Member::Export(std::queue<std::string>* outputText, PrimaryData* caller, std
 	memberObject.AddMember("Name", nameValue, allocator);
 
 	Value fieldArray(kArrayType);
-	
+
+	//Loop through every member field
 	for (const MemberField& field : fields_)
 	{
 		auto name = GenericValue<UTF8<>>::StringRefType(field.GetName());
@@ -237,22 +261,33 @@ int Member::Delete()
 
 int Member::Validate(std::queue<std::string>* outputText)
 {
+	//Ouput text to member window informing what's going on
 	string text;
 	text.append("Member ");
 	text.append(idBuffer_);
 	text.append(" Validating Data...");
 	outputText->push(text);
-	for (auto& field : fields_)
+
+	//Validate every field
+	for (MemberField& field : fields_)
 	{
 		field.Validate(outputText);
 	}//End for
+
+	//Output text to inform validation completing
 	text.clear();
 	text.append("Member ");
 	text.append(idBuffer_);
 	text.append(" Validation Complete");
 	outputText->push(text);
+
 	return 1;
 }//End Validate
+
+bool Member::IsEmpty() const
+{
+	return PrimaryData::IsEmpty() && fields_.empty() && (type_ == nullptr || type_->GetInternalID() == -1);
+}//End IsEmpty
 
 MemberField* Member::GetFieldAtIndex(const int index)
 {
@@ -279,10 +314,13 @@ void Member::SetType(const shared_ptr<Template>& temp)
 {
 	type_ = temp;
 
+	//Clear the fields when switching data type
 	if(!fields_.empty()) fields_.clear();
 
-	const auto fields = type_->GetFields();
+	const vector<TemplateField> fields = type_->GetFields();
 
+	//Add all the new fields to the member
+	fields_.reserve(fields.size());
 	for(int i = 0; i < type_->GetNumberOfFields(); i++)
 	{
 		TemplateField field = fields[i];
@@ -304,6 +342,7 @@ void Member::RefreshFieldType(const int fieldIndex)
 
 void Member::RefreshFieldQuantity()
 {
+	//Cache the fields in the member then clear the actual values
 	vector<MemberField> cache;
 	if(!fields_.empty())
 	{
@@ -311,22 +350,28 @@ void Member::RefreshFieldQuantity()
 		fields_.clear();
 	}//End if
 
+	//If type was set to nothing, then there's nothing else to do
 	if(type_ == nullptr) return;
 
-	const auto fields = type_->GetFields();
+	const vector<TemplateField> fields = type_->GetFields();
 
+	//Add the fields back into the member
 	for(int i = 0; i < type_->GetNumberOfFields(); i++)
 	{
 		TemplateField field = fields[i];
 		fields_.emplace_back(this, *field.GetDataType(), i);
 	}//End for
 
-	for (auto& cacheField : cache)
+	//Loop through the cached fields
+	for (MemberField& cacheField : cache)
 	{
-		for (auto& field : fields_)
+		//Loop through the new fields
+		for (MemberField& field : fields_)
 		{
+			//If the existing field name and type match the new field and type
 			if(strcmp(field.GetNameAndTypeLabel(), cacheField.GetNameAndTypeLabel()) == 0)
 			{
+				//Add the data back into the data buffer from the cache
 				strcpy(field.GetDataBuffer(), cacheField.GetDataBuffer());
 				field.SetDataBufferCurrentSize(*cacheField.GetDataBufferCurrentSize());
 				break;

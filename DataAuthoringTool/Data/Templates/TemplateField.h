@@ -8,8 +8,9 @@
 #include "../Validation/ValidationRuleParameter.h"
 
 #include <string>
-using std::string;
 #include <vector>
+
+using std::string;
 using std::vector;
 
 //Forward Declarations
@@ -18,17 +19,24 @@ class Template;
 class TemplateField : public IDelete
 {
 public:
-	TemplateField(Template* parentTemplate) : parentTemplate_(parentTemplate) {};
-	bool operator==(const TemplateField&) const;
+	TemplateField(Template* parentTemplate) : parentTemplate_(parentTemplate) {}
 	int Delete() override;
+
+	bool operator==(const TemplateField&) const;
+
 	char* GetIDBuffer() { return idBuffer_; }
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
+
 	void RefreshValidationRules(int type);
+
 	void SetDataType(int type);
 	void SetDataType(DataType::DATA_TYPE type);
+
 	static int GetBufferMax() { return bufferMax_; }
+
 	DataType::DATA_TYPE* GetDataType() { return &dataType_; }
 	int* GetDataTypeAsInt() { return &typeInt_; }
+
 	vector<std::pair<RULES, int>>* GetValidationRules(){ return &validationRules_; }
 	ValidationRuleParameter* GetValidationRuleParameters(){ return &validationRuleParameters_; }
 
@@ -41,8 +49,10 @@ private:
 
 	Template* parentTemplate_;
 	string id_;
+
 	DataType::DATA_TYPE dataType_ = DataType::DATA_TYPE::NONE;
 	int typeInt_ = static_cast<int>(DataType::DATA_TYPE::NONE);
+
 	vector<std::pair<RULES, int>> validationRules_;
 	ValidationRuleParameter validationRuleParameters_;
 };

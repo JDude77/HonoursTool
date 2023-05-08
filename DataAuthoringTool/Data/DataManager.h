@@ -2,19 +2,19 @@
 #ifndef DATA_MANAGER
 #define DATA_MANAGER
 
-#include <map>
-using std::map;
-#include <memory>
-using std::shared_ptr;
-#include <string>
-using std::string;
-#include <vector>
-using std::vector;
-
-//Forward Declarations
+#include "Groups/Group.h"
 #include "Members/Member.h"
 #include "Templates/Template.h"
-#include "Groups/Group.h"
+
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+using std::map;
+using std::shared_ptr;
+using std::string;
+using std::vector;
 
 class DataManager
 {
@@ -29,17 +29,20 @@ class DataManager
 	int numberOfGroups_ = 0;
 	inline static int internalIDCounter_ = -1;
 
-	[[nodiscard]] int GetNumberOfTemplates() const { return numberOfTemplates_; }
-	[[nodiscard]] int GetNumberOfMembers() const { return numberOfMembers_; }
-	[[nodiscard]] int GetNumberOfGroups() const { return numberOfGroups_; }
+	[[nodiscard]] int GetNumberOfTemplates()	const { return numberOfTemplates_; }
+	[[nodiscard]] int GetNumberOfMembers()		const { return numberOfMembers_; }
+	[[nodiscard]] int GetNumberOfGroups()		const { return numberOfGroups_; }
+
 public:
 	DataManager();
 
-	vector<shared_ptr<Member>> GetAllMembers();
-	vector<shared_ptr<Template>> GetAllTemplates();
-	vector<shared_ptr<Group>> GetAllGroups();
+	vector<shared_ptr<Member>>		GetAllMembers();
+	vector<shared_ptr<Template>>	GetAllTemplates();
+	vector<shared_ptr<Group>>		GetAllGroups();
 
-	shared_ptr<Template> FindTemplateByInternalID(int internalID);
+	shared_ptr<Template>	FindTemplateByInternalID(int internalID);
+	shared_ptr<Member>		FindMemberByInternalID(int internalID);
+	shared_ptr<Group>		FindGroupByInternalID(int internalID);
 	
 	void AddInstanceToDataMap(Member instance);
 	void AddInstanceToDataMap(Template instance);

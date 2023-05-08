@@ -1,7 +1,5 @@
 #include "Renderer.h"
 
-#include <utility>
-
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -11,11 +9,13 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_D3D11_IMPLEMENTATION
+
 #include "../Nuklear/Core/nuklear.h"
 #include "../Nuklear/Core/nuklear_d3d11.h"
-
 #include "../Nuklear/Tool Windows/NuklearWindowManager.h"
 #include "../Data/DataManager.h"
+
+#include <utility>
 
 constexpr auto MAX_VERTEX_BUFFER = 512 * 1024;
 constexpr auto MAX_INDEX_BUFFER = 128 * 1024;
@@ -94,7 +94,8 @@ void Renderer::InitNuklear(const int windowWidth, const int windowHeight, const 
 	{
 		nk_style_set_font(nuklearContext_, &font->handle);
 	}//End if
-	
+
+	//If this blue background colour is visible, something has gone wrong with landing scaling
 	backgroundColour_ = new nk_colorf;
 	backgroundColour_->r = 0.1f;
 	backgroundColour_->g = 0.18f;

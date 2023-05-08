@@ -1,13 +1,22 @@
 #include "Template.h"
 
-#include "Windows.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
-using namespace rapidjson;
+#include <Windows.h>
+
+using rapidjson::Document;
+using rapidjson::FileWriteStream;
+using rapidjson::GenericValue;
+using rapidjson::kArrayType;
+using rapidjson::kObjectType;
+using rapidjson::kStringType;
+using rapidjson::PrettyWriter;
+using rapidjson::UTF8;
+using rapidjson::Value;
 
 Template::Template(const char* ID, const int internalID) : PrimaryData(internalID)
 {
-	for (int i = 0 ; i < sizeof(ID); i++)
+	for (int i = 0 ; i < sizeof ID; i++)
 	{
 		idBuffer_[i] = ID[i];
 		nameBuffer_[i] = ID[i];
@@ -28,11 +37,10 @@ int Template::Load()
 
 int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 {
-	//TODO: Template Export functionality
 	//Create JSON document
 	Document jsonDocument;
 	jsonDocument.SetObject();
-	auto& documentAllocator = jsonDocument.GetAllocator();
+	Document::AllocatorType& documentAllocator = jsonDocument.GetAllocator();
 
 	//Add template name to the JSON document
 	Value nameValue;
@@ -78,7 +86,7 @@ int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 
 		//Create rules array value
 		Value rules(kArrayType);
-		auto ruleParameters = field.GetValidationRuleParameters();
+		ValidationRuleParameter* ruleParameters = field.GetValidationRuleParameters();
 
 		//Loop through all validation rules of the field
 		for (auto& [rule, active] : *field.GetValidationRules())
@@ -93,58 +101,58 @@ int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 			//Correctly grab data about the validation rules per-type
 			switch (rule)
 			{
-				case ALL_PRESENCE:
+				case RULES::ALL_PRESENCE:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Presence"), true, documentAllocator);
 					break;
 
-				case STRING_MAX_LENGTH:
+				case RULES::STRING_MAX_LENGTH:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("String Max Length"), static_cast<int>(strtol(ruleParameters->GetBuffer(rule), nullptr, 0)), documentAllocator);
 					break;
 
-				case STRING_MIN_LENGTH:
+				case RULES::STRING_MIN_LENGTH:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("String Min Length"), static_cast<int>(strtol(ruleParameters->GetBuffer(rule), nullptr, 0)), documentAllocator);
 					break;
 
-				case STRING_STARTS_WITH_SUBSTRING:
+				case RULES::STRING_STARTS_WITH_SUBSTRING:
 					stringVal.SetString(ruleParameters->GetBuffer(rule), documentAllocator);
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("String Starts With Substring"), stringVal, documentAllocator);
 					break;
 
-				case STRING_ENDS_WITH_SUBSTRING:
+				case RULES::STRING_ENDS_WITH_SUBSTRING:
 					stringVal.SetString(ruleParameters->GetBuffer(rule), documentAllocator);
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("String Ends With Substring"), stringVal, documentAllocator);
 					break;
 
-				case NUMBER_IS_NOT_NEGATIVE: 
+				case RULES::NUMBER_IS_NOT_NEGATIVE: 
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Number Is Not Negative"), true, documentAllocator);
 					break;
 
-				case NUMBER_IS_NEGATIVE:
+				case RULES::NUMBER_IS_NEGATIVE:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Number Is Negative"), true, documentAllocator);
 					break;
 
-				case NUMBER_IS_NOT_ZERO:
+				case RULES::NUMBER_IS_NOT_ZERO:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Number Is Not Zero"), true, documentAllocator);
 					break;
 
-				case NUMBER_IS_LESS_THAN:
+				case RULES::NUMBER_IS_LESS_THAN:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Number Is Less Than"), strtof(ruleParameters->GetBuffer(rule), nullptr), documentAllocator);
 					break;
 
-				case NUMBER_IS_GREATER_THAN:
+				case RULES::NUMBER_IS_GREATER_THAN:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Number Is Greater Than"), strtof(ruleParameters->GetBuffer(rule), nullptr), documentAllocator);
 					break;
 
-				case INTEGER_DIVISIBLE_BY_INTEGER:
+				case RULES::INTEGER_DIVISIBLE_BY_INTEGER:
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Integer Divisible By Integer"), static_cast<int>(strtol(ruleParameters->GetBuffer(rule), nullptr, 0)), documentAllocator);
 					break;
 
-				case CHAR_IS_ONE_OF_CHARACTER_SET:
+				case RULES::CHAR_IS_ONE_OF_CHARACTER_SET:
 					stringVal.SetString(ruleParameters->GetBuffer(rule), documentAllocator);
 					ruleVal.AddMember(GenericValue<UTF8<>>::StringRefType("Char Is One Of Character Set"), stringVal, documentAllocator);
 					break;
 
-				case NA: default: ;
+				case RULES::NA: default: ;
 			}//End switch
 
 			//Add the constructed rule value to the rules array
@@ -164,7 +172,7 @@ int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 		//Construct file name
 		string fileName;
 		fileName.append(idBuffer_);
-		fileName.append(".json");
+		fileName.append("_TEMPLATE.json");
 
 		//Set up buffer/stream/file
 		FILE* filePath = fopen(fileName.c_str(), "wb");
@@ -181,32 +189,47 @@ int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 		//Output text
 		string text = "Template ";
 		text.append(idBuffer_);
-		text.append(" exported successfully!");
-		outputText->push(text);
+		if(success == 0)
+		{
+			text.append(" exported successfully!");
+			outputText->push(text);
 
-		//Get file path exported to
-		text = "File located at: \"";
-		char fullFilePath[MAX_PATH];
-		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
-		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
-		text.append(std::string(fullFilePath).substr(0, pos));
-		text.append("\" in ");
-		text.append(fileName);
-		outputText->push(text);
+			//Get file path exported to
+			text = "File located at: \"";
+			char fullFilePath[MAX_PATH];
+			GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+			const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+			text.append(std::string(fullFilePath).substr(0, pos));
+			text.append("\" in ");
+			text.append(fileName);
+			outputText->push(text);
 
-		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
-		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+			const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+			const LPCWSTR fileAsCString = fileNameToWString.c_str();
 
-		//Open the file in an editor
-		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+			//Open the file in an editor
+			ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+		}//End if
+		else
+		{
+			text.append(" did not export successfully.");
+			outputText->push(text);
 
+			text = "File close function returned with value: ";
+			text.append(std::to_string(success));
+			outputText->push(text);
+
+			text = "Please send a report about this error to the developer.";
+			outputText->push(text);
+		}//End else
 		return success;
 	}//End Exporting functionality
 }//End Export (Template)
 
 //Export call for adding a template to a group
-int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument)
+int Template::Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<Document> jsonDocument)
 {
+	//Not needed due to the member implicitly handling this when it is exported - the templates don't have full detail exported in groups
 	return 1;
 }//End Export
 

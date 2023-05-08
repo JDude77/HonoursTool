@@ -1,13 +1,18 @@
 #pragma once
 #ifndef DATA_INTERFACES
 #define DATA_INTERFACES
+#include "../../RapidJSON/document.h"
+
 #include <memory>
 #include <string>
 #include <queue>
 
-#include "../../RapidJSON/document.h"
-class PrimaryData;
 using std::string;
+using std::queue;
+using std::shared_ptr;
+using rapidjson::Document;
+
+class PrimaryData;
 
 class ISave
 {
@@ -24,7 +29,7 @@ class ILoad
 class IValidate
 {
 	public:
-	virtual int Validate(std::queue<std::string>* outputText) = 0;
+	virtual int Validate(queue<string>* outputText) = 0;
 };
 
 class IDelete
@@ -37,8 +42,8 @@ class IExport
 {
 	public:
 	//Caller pointer determines whether the JSON should be part of a larger JSON file (has caller) or an individual one (null pointer)
-	virtual int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) = 0;
-	virtual int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) = 0;
+	virtual int Export(queue<string>* outputText, PrimaryData* caller = nullptr) = 0;
+	virtual int Export(queue<string>* outputText, PrimaryData* caller, shared_ptr<Document> jsonDocument) = 0;
 };
 
 class PrimaryData : ISave, ILoad, IExport, IDelete
@@ -48,16 +53,18 @@ public:
 	int Save() override = 0;
 	int Load() override = 0;
 	int Delete() override = 0;
-	int Export(std::queue<std::string>* outputText, PrimaryData* caller = nullptr) override = 0;
-	int Export(std::queue<std::string>* outputText, PrimaryData* caller, std::shared_ptr<rapidjson::Document> jsonDocument) override = 0;
+	int Export(queue<string>* outputText, PrimaryData* caller = nullptr) override = 0;
+	int Export(queue<string>* outputText, PrimaryData* caller, shared_ptr<Document> jsonDocument) override = 0;
 
 	char* GetNameBuffer() { return nameBuffer_; }
 	char* GetIDBuffer() { return idBuffer_; }
+
 	int* GetNameBufferCurrentLength() { return &nameBufferCurrentLength_; }
 	int* GetIDBufferCurrentLength() { return &idBufferCurrentLength_; }
+
 	static int GetBufferMax() { return bufferMax_; }
-	int GetInternalID() const { return internalID_; }
-	virtual bool IsEmpty() const { return strlen(idBuffer_) == 0 && strlen(nameBuffer_) == 0; }
+	[[nodiscard]] int GetInternalID() const { return internalID_; }
+	[[nodiscard]] virtual bool IsEmpty() const { return strlen(idBuffer_) == 0 && strlen(nameBuffer_) == 0; }
 
 	void UpdateNameBuffer()
 	{

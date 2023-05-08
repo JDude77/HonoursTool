@@ -1,12 +1,18 @@
 #include "Group.h"
 
-#include <Windows.h>
-#include "../Members/Member.h"
-#include "../Templates/Template.h"
 #include "../../RapidJSON/filewritestream.h"
 #include "../../RapidJSON/prettywriter.h"
+#include "../Members/Member.h"
+#include "../Templates/Template.h"
+#include <Windows.h>
 #include <ranges>
-using namespace rapidjson;
+
+using rapidjson::Document;
+using rapidjson::FileWriteStream;
+using rapidjson::GenericValue;
+using rapidjson::PrettyWriter;
+using rapidjson::UTF8;
+using rapidjson::Value;
 
 int Group::Save()
 {
@@ -22,16 +28,22 @@ int Group::Load()
 
 int Group::Validate(std::queue<std::string>* outputText)
 {
-	//TODO: Group Validate functionality extended
+	//Text to output to the window
 	string text;
+
+	//Start by showing the ID of the group to show what's going on
 	text.append("Group ");
 	text.append(idBuffer_);
 	text.append(" Validating All Members...");
 	outputText->push(text);
-	for (const auto& member : members_ | std::views::values)
+
+	//Validate every individual member
+	for (const shared_ptr<Member>& member : members_ | std::views::values)
 	{
 		member->Validate(outputText);
 	}//End for
+
+	//Tell the user that validation is done
 	text.clear();
 	text.append("Group ");
 	text.append(idBuffer_);
@@ -64,7 +76,7 @@ int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 	jsonDocument->AddMember("Name", nameValue, jsonDocAlloc);
 
 	//Loop through every member
-	for(const auto& member : members_ | std::views::values)
+	for(const shared_ptr<Member>& member : members_ | std::views::values)
 	{
 		//Add the member to the document object
 		member->Export(outputText, this, jsonDocument);
@@ -75,7 +87,7 @@ int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 		//Construct file name
 		string fileName;
 		fileName.append(idBuffer_);
-		fileName.append(".json");
+		fileName.append("_GROUP.json");
 
 		//Set up buffer/stream/file
 		FILE* filePath = fopen(fileName.c_str(), "wb");
@@ -92,24 +104,40 @@ int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller)
 		//Output text
 		string text = "Group ";
 		text.append(idBuffer_);
-		text.append(" exported successfully!");
-		outputText->push(text);
 
-		//Get file path exported to
-		text = "File located at: \"";
-		char fullFilePath[MAX_PATH];
-		GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
-		const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
-		text.append(std::string(fullFilePath).substr(0, pos));
-		text.append("\" in ");
-		text.append(fileName);
-		outputText->push(text);
+		if(success == 0)
+		{
+			text.append(" exported successfully!");
+			outputText->push(text);
 
-		const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
-		const LPCWSTR fileAsCString = fileNameToWString.c_str();
+			//Get file path exported to
+			text = "File located at: \"";
+			char fullFilePath[MAX_PATH];
+			GetModuleFileNameA(nullptr, fullFilePath, MAX_PATH);
+			const std::string::size_type pos = std::string(fullFilePath).find_last_of("\\/");
+			text.append(std::string(fullFilePath).substr(0, pos));
+			text.append("\" in ");
+			text.append(fileName);
+			outputText->push(text);
 
-		//Open the file in an editor
-		ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+			const std::wstring fileNameToWString = std::wstring(fileName.begin(), fileName.end());
+			const LPCWSTR fileAsCString = fileNameToWString.c_str();
+
+			//Open the file in an editor
+			ShellExecute(nullptr, nullptr, fileAsCString, nullptr, nullptr, SW_SHOW);
+		}//End if
+		else
+		{
+			text.append(" did not export successfully.");
+			outputText->push(text);
+
+			text = "File close function returned with value: ";
+			text.append(std::to_string(success));
+			outputText->push(text);
+
+			text = "Please send a report about this error to the developer.";
+			outputText->push(text);
+		}//End else
 
 		return success;
 	}//End Exporting functionality
@@ -120,6 +148,11 @@ int Group::Export(std::queue<std::string>* outputText, PrimaryData* caller, std:
 	//Nothing to do here for now - this version is mainly just used for calling on members/templates in groups
 	return -1;
 }//End Export
+
+bool Group::IsEmpty() const
+{
+	return PrimaryData::IsEmpty() && members_.empty() && templates_.empty();
+}//End IsEmpty
 
 vector<shared_ptr<Member>> Group::GetMembers()
 {
@@ -145,12 +178,12 @@ vector<shared_ptr<Template>> Group::GetTemplates()
 
 int Group::AddTemplateToGroup(const shared_ptr<Template>& newTemplate)
 {
-	auto id = newTemplate->GetIDBuffer();
-	const auto ptr = newTemplate.get();
+	char* id = newTemplate->GetIDBuffer();
+	const Template* templatePointer = newTemplate.get();
 	//Check to ensure the template isn't already in the group
 	for (auto& [existingID, pointer] : templates_)
 	{
-		if(existingID == id || ptr == pointer.get())
+		if(existingID == id || templatePointer == pointer.get())
 		{
 			return 0;
 		}//End if
@@ -158,7 +191,7 @@ int Group::AddTemplateToGroup(const shared_ptr<Template>& newTemplate)
 
 	//Reset flags and cached internal IDs
 	addNewTemplateFlag_ = false;
-	cachedIDOfTemplateToAdd_ = -1;
+	flaggedTemplateInternalID_ = -1;
 
 	//Add the template to the group
 	templates_.emplace_back(id, newTemplate);
@@ -168,12 +201,12 @@ int Group::AddTemplateToGroup(const shared_ptr<Template>& newTemplate)
 
 int Group::AddMemberToGroup(const shared_ptr<Member>& newMember)
 {
-	auto id = newMember->GetIDBuffer();
-	const auto ptr = newMember.get();
+	char* id = newMember->GetIDBuffer();
+	const Member* memberPointer = newMember.get();
 	//Check to ensure the member isn't already in the group
 	for (auto& [existingID, pointer] : members_)
 	{
-		if(existingID == id || ptr == pointer.get())
+		if(existingID == id || memberPointer == pointer.get())
 		{
 			return 0;
 		}//End if
@@ -197,7 +230,7 @@ int Group::RemoveTemplateFromGroup(const shared_ptr<Template>& templateToRemove)
 
 	//Remove all members of that template from the group
 	vector<std::ranges::borrowed_iterator_t<vector<pair<string, shared_ptr<Member>>>&>> membersToErase;
-	for (auto& member : members_)
+	for (pair<string, shared_ptr<Member>>& member : members_)
 	{
 		if(member.second->GetType()->GetInternalID() == templateToRemove->GetInternalID())
 		{
@@ -240,6 +273,6 @@ int Group::RemoveMemberFromGroup(const shared_ptr<Member>& memberToRemove)
 
 void Group::FlagTemplateToAdd(const int templateID)
 {
-	cachedIDOfTemplateToAdd_ = templateID;
+	flaggedTemplateInternalID_ = templateID;
 	addNewTemplateFlag_ = true;
 }//End FlagTemplateToAdd

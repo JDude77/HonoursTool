@@ -4,14 +4,13 @@
 
 bool TemplateField::operator==(const TemplateField& rhs) const
 {
-	const auto comp = string(idBuffer_);
-	const auto comp2 = string(rhs.idBuffer_);
-	return comp == comp2 && parentTemplate_ == rhs.parentTemplate_;
+	const auto id = string(idBuffer_);
+	const auto otherID = string(rhs.idBuffer_);
+	return id == otherID && parentTemplate_ == rhs.parentTemplate_;
 }//End == operator overload
 
 int TemplateField::Delete()
 {
-	//TODO: Template Field delete functionality
 	//Clear data
 	memset(idBuffer_, '\0', bufferMax_);
 	idBufferCurrentLength_ = 0;
@@ -31,7 +30,6 @@ void TemplateField::RefreshValidationRules(const int type)
 	}//End for
 }//End RefreshValidationRules
 
-
 void TemplateField::SetDataType(const int type)
 {
 	const int cache = typeInt_;
@@ -47,4 +45,3 @@ void TemplateField::SetDataType(const DataType::DATA_TYPE type)
 	typeInt_ = static_cast<int>(type);
 	if(dataType_ != cache) RefreshValidationRules(static_cast<int>(type));
 }//End SetDataType
-

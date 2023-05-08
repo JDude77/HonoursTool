@@ -25,11 +25,11 @@ struct NuklearWindow
 	bool UpdateWindowTitle(const char* newWindowTitle);
 	[[nodiscard]] const char* GetWindowTitle() const { return windowTitle_; }
 	shared_ptr<PrimaryData> GetWindowData() { return windowData_; }
-	WINDOW_TYPE GetWindowType() const { return windowType_; }
-	std::queue<std::string>* GetSubFooterText() const { return subFooterText_.get(); }
-	bool GetHasHeader() const { return hasHeader_; }
-	bool GetHasFooter() const { return hasFooter_; }
-	bool GetHasSubFooter() const { return hasSubFooter_; }
+	[[nodiscard]] WINDOW_TYPE GetWindowType() const { return windowType_; }
+	[[nodiscard]] std::queue<std::string>* GetSubFooterText() const { return subFooterText_.get(); }
+	[[nodiscard]] bool GetHasHeader() const { return hasHeader_; }
+	[[nodiscard]] bool GetHasFooter() const { return hasFooter_; }
+	[[nodiscard]] bool GetHasSubFooter() const { return hasSubFooter_; }
 	void ClearSubFooterText() const { while(!subFooterText_->empty()) subFooterText_->pop(); }
 
 private:

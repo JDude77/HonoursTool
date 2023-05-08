@@ -1,5 +1,5 @@
-#include "Renderer/Renderer.h"
 #include "Data/DataManager.h"
+#include "Renderer/Renderer.h"
 
 int main()
 {

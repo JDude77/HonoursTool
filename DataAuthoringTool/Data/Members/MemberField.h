@@ -5,11 +5,12 @@
 #include "../Shared/DataInterfaces.h"
 #include "../Shared/DataTypes.h"
 #include "../Shared/Field.h"
-
 #include <memory>
 
-class Member;
 using std::shared_ptr;
+
+//Forward Declarations
+class Member;
 
 class MemberField : public IDelete, public IValidate
 {
